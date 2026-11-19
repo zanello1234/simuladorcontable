@@ -328,3 +328,37 @@ export function marcarLeido(s: GameState, id?: string): Resultado {
 export function marcarTutorial(s: GameState, paso: string): void {
   if (!s.tutorial.includes(paso)) s.tutorial.push(paso);
 }
+
+// ----------------------------------------------------------------------------- relámpago
+
+/** Resultado de "Despachar la pila": cada acierto avanza media hora de carga en las tareas más urgentes. */
+export function completarRelampago(s: GameState, aciertos: number, errores: number): Resultado {
+  const p = player(s);
+  s.progreso.relampagoEl = s.date;
+  if (aciertos > s.progreso.relampagoMejor) s.progreso.relampagoMejor = aciertos;
+  let horas = aciertos * 0.5;
+  const pend = s.tasks.filter((t) => t.estado === 'pendiente' && t.docsRecibidos).sort((a, b) => (a.vence < b.vence ? -1 : 1));
+  let avanzadas = 0;
+  for (const t of pend) {
+    if (horas <= 0) break;
+    const st = t.steps[t.stepIndex];
+    if (!st || (st.kind !== 'carga' && st.kind !== 'recopilar')) continue;
+    const falta = st.horasTotales - st.horasHechas;
+    const usa = Math.min(falta, horas);
+    st.horasHechas += usa;
+    st.hechoPor = 'player';
+    horas -= usa;
+    avanzadas += 1;
+    if (st.horasHechas >= st.horasTotales - 1e-6) {
+      t.stepIndex += 1;
+      prepararSiguientePaso(s, t, p);
+      fx(s, 'paso_completo', { workerId: 'player', texto: 'Carga' });
+    }
+  }
+  p.estres = Math.max(0, Math.min(100, p.estres - aciertos * 0.4 + errores * 1.2));
+  p.ocupadoHoras += 1;
+  p.statusText = 'Despachando la pila ⚡';
+  if (s.estudio.autoAsignar) for (const w of s.workers) ordenarCola(s, w);
+  fx(s, 'idea', { texto: `⚡ ${aciertos} despachados` });
+  return ok(avanzadas ? `Despachaste ${aciertos} comprobantes: adelantaste la carga de ${avanzadas} tarea/s.` : `${aciertos} aciertos. No había carga pendiente para adelantar, pero bajaste el estrés.`);
+}

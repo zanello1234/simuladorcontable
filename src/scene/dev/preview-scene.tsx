@@ -73,7 +73,8 @@ function baseState(): GameState {
     inflacion: { mensual: 0.02, indice: 1, historia: [] },
     fx: [], fxSeq: 0,
     stats: { presentadasATiempo: 0, presentadasTarde: 0, multasPagadas: 0, inspeccionesSuperadas: 0, inspeccionesConAjuste: 0, clientesGanados: 0, clientesPerdidos: 0, minijuegosJugados: 0, mejorCaja: 0 },
-    tutorial: [], idSeq: 10,
+    tutorial: [],
+    progreso: { misiones: [], logros: [], racha: 0, mejorRacha: 0, notas: [], relampagoMejor: 0 }, idSeq: 10,
   };
 }
 

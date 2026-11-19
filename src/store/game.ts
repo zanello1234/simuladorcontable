@@ -22,6 +22,7 @@ interface Store {
   tab: Tab;
   toasts: Toast[];
   minigameTaskId?: string;
+  relampago: boolean;
   workerModalId?: string;
   clientModalId?: string;
   showIntro: boolean;
@@ -43,6 +44,7 @@ interface Store {
   toast: (texto: string, tone?: Tone) => void;
   dismissToast: (id: number) => void;
   openMinigame: (taskId?: string) => void;
+  openRelampago: (v: boolean) => void;
   openWorker: (id?: string) => void;
   openClient: (id?: string) => void;
   setIntro: (v: boolean) => void;
@@ -56,6 +58,7 @@ export const useGame = create<Store>((set, get) => ({
   toasts: [],
   showIntro: false,
   lastSpeed: 1,
+  relampago: false,
 
   start: (cfg) => {
     const g = newGame(cfg);
@@ -131,6 +134,7 @@ export const useGame = create<Store>((set, get) => ({
   },
   dismissToast: (id) => set({ toasts: get().toasts.filter((t) => t.id !== id) }),
   openMinigame: (taskId) => set({ minigameTaskId: taskId }),
+  openRelampago: (v) => set({ relampago: v }),
   openWorker: (id) => set({ workerModalId: id }),
   openClient: (id) => set({ clientModalId: id }),
   setIntro: (v) => set({ showIntro: v }),

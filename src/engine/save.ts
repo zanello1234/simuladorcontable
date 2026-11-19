@@ -1,6 +1,7 @@
 // Guardado: autosave local (si el navegador lo permite) + exportar/importar archivo .json.
 import { claudeDescargar, enClaude } from './cloud';
 import { SAVE_VERSION } from './config';
+import { PROGRESO_INICIAL } from './progression';
 import type { GameState } from './types';
 
 const KEY = 'partida-doble:save';
@@ -65,6 +66,8 @@ export function validar(obj: unknown): GameState | null {
   if (s.version !== SAVE_VERSION) return null;
   s.fx = [];
   s.speed = 0;
+  // partidas anteriores a la progresión
+  if (!s.progreso) s.progreso = { ...PROGRESO_INICIAL, misiones: [], logros: [], notas: [] };
   return s;
 }
 

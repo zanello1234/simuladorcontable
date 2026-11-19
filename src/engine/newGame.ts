@@ -7,6 +7,7 @@ import { avatar as genAvatar } from './names';
 import { generarTareasDelMes } from './obligations';
 import { makeRng } from './rng';
 import { asignacionAutomatica } from './simulation';
+import { PROGRESO_INICIAL } from './progression';
 import { generarCandidatos, titular } from './staff';
 import type { Client, GameState, Message, NewGameConfig } from './types';
 
@@ -103,6 +104,7 @@ export function newGame(cfg: NewGameConfig): GameState {
     fxSeq: 0,
     stats: { presentadasATiempo: 0, presentadasTarde: 0, multasPagadas: 0, inspeccionesSuperadas: 0, inspeccionesConAjuste: 0, clientesGanados: 0, clientesPerdidos: 0, minijuegosJugados: 0, mejorCaja: dif.caja },
     tutorial: [],
+    progreso: { ...PROGRESO_INICIAL, misiones: [], logros: [], notas: [] },
     idSeq: 100,
   };
 

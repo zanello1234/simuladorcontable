@@ -1376,3 +1376,67 @@
   text-align: center;
   justify-content: center;
 }
+
+/* ---------------------------------------------------------------- misiones, logros, rasgos */
+.misiones,
+.logros {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mision,
+.logro {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+.mision-icon,
+.logro-icon {
+  font-size: 24px;
+  width: 32px;
+  text-align: center;
+  flex: none;
+}
+.mision-premio {
+  font-weight: 800;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.logro {
+  opacity: 0.55;
+}
+.logro.ok {
+  opacity: 1;
+  background: linear-gradient(90deg, var(--warn-soft), var(--panel-2) 60%);
+  border-color: var(--gold);
+}
+.chip.rasgo {
+  margin-left: 6px;
+  background: var(--info-soft);
+  color: var(--info);
+  border-color: transparent;
+}
+.rasgo-line .chip {
+  margin-left: 0;
+}
+.relampago-btn {
+  min-height: 46px;
+  font-size: 15px;
+  flex-direction: column;
+  gap: 0;
+}
+.relampago-btn small {
+  font-weight: 600;
+  opacity: 0.85;
+  font-size: 11.5px;
+}
+.tb-stat.racha {
+  background: rgba(240, 169, 42, 0.3);
+}

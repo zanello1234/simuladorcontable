@@ -21,6 +21,9 @@ const FX_SFX: Partial<Record<FxKind, Sfx>> = {
   nivel: 'nivel',
   herramienta: 'herramienta',
   idea: 'notificacion',
+  logro: 'nivel',
+  mision: 'exito',
+  racha: 'corregido',
 };
 
 // eventos que ya suenan por su FX o que no necesitan sonido propio
@@ -37,6 +40,7 @@ const EVENTO_SFX: Record<string, Sfx | null> = {
   caja_roja: 'arca',
   pedido_aumento: 'notificacion',
   renuncia: 'renuncia',
+  nota_mes: 'notificacion',
 };
 
 export function climaDe(g: GameState): Mood {

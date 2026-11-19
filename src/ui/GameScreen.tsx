@@ -11,6 +11,7 @@ import { EventModal } from './modals/EventModal';
 import { GameOverModal } from './modals/GameOverModal';
 import { IntroModal } from './modals/IntroModal';
 import { MinigameModal } from './modals/MinigameModal';
+import { RelampagoModal } from './modals/RelampagoModal';
 import { WorkerModal } from './modals/WorkerModal';
 import { Bandeja } from './screens/Bandeja';
 import { Clientes } from './screens/Clientes';
@@ -37,6 +38,7 @@ export function GameScreen() {
   const setTab = useGame((s) => s.setTab);
   const tick = useGame((s) => s.tick);
   const minigame = useGame((s) => s.minigameTaskId);
+  const relampago = useGame((s) => s.relampago);
   const workerModal = useGame((s) => s.workerModalId);
   const clientModal = useGame((s) => s.clientModalId);
   const showIntro = useGame((s) => s.showIntro);
@@ -44,7 +46,7 @@ export function GameScreen() {
   const togglePause = useGame((s) => s.togglePause);
   const setSpeed = useGame((s) => s.setSpeed);
 
-  const bloqueado = g.events.length > 0 || !!minigame || !!g.gameOver || showIntro;
+  const bloqueado = g.events.length > 0 || !!minigame || relampago || !!g.gameOver || showIntro;
   useGameAudio(g, bloqueado);
 
   // bucle de juego
@@ -118,8 +120,9 @@ export function GameScreen() {
       </main>
       <Toasts />
       {showIntro && <IntroModal />}
-      {!showIntro && g.events.length > 0 && !minigame && <EventModal />}
+      {!showIntro && g.events.length > 0 && !minigame && !relampago && <EventModal />}
       {minigame && <MinigameModal />}
+      {relampago && !minigame && <RelampagoModal />}
       {workerModal && !minigame && <WorkerModal />}
       {clientModal && !minigame && <ClientModal />}
       {g.gameOver && <GameOverModal />}

@@ -415,6 +415,8 @@ const DEFS: EventDef[] = [
       }
       ajustarSatisfaccion(c, -10);
       ajustarReputacion(s, 1);
+      const st = s.stats as unknown as { eticaOk?: number };
+      st.eticaOk = (st.eticaOk ?? 0) + 1;
       return 'Le explicaste por qué no. Se fue rezongando, pero tu firma sigue limpia.';
     },
   },
@@ -606,6 +608,10 @@ const DEFS: EventDef[] = [
   },
   {
     id: 'info',
+    resolver: () => '',
+  },
+  {
+    id: 'nota_mes',
     resolver: () => '',
   },
 ];

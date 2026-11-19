@@ -66,6 +66,12 @@ export function TopBar() {
           <span aria-hidden>⭐</span>
           <b>{Math.round(g.estudio.reputacion)}</b>
         </div>
+        {g.progreso.racha >= 3 && (
+          <div className="tb-stat racha" title={`Racha: ${g.progreso.racha} presentaciones en término seguidas`}>
+            <span aria-hidden>🔥</span>
+            <b>{g.progreso.racha}</b>
+          </div>
+        )}
         <div className="tb-stat hide-sm" title="Inflación del último mes">
           <span aria-hidden>📈</span>
           <b>{pct(g.inflacion.mensual, 1)}</b>

@@ -2,7 +2,8 @@
 import { CARGAS_SOCIALES, ERROR_BASE, ROLES } from './config';
 import { avatar, nombrePersona } from './names';
 import type { Rng } from './rng';
-import type { Area, Avatar, Candidate, Role, StepKind, Worker } from './types';
+import { RASGOS, RASGOS_LISTA } from './traits';
+import type { Area, Avatar, Candidate, Rasgo, Role, StepKind, Worker } from './types';
 import { AREAS } from './types';
 
 const BIOS: Record<Role, string[]> = {
@@ -32,6 +33,7 @@ export function generarCandidato(rng: Rng, role: Role, indice: number, id: strin
   const velocidad = Math.round(rng.range(0.78, 1.28) * 100) / 100;
   const prom = AREAS.reduce((a, k) => a + skills[k], 0) / 3;
   const factor = 0.88 + (prom - (r.skill[0] + r.skill[1]) / 2) / 120 + (velocidad - 1) * 0.25;
+  const rasgo: Rasgo | undefined = rng.chance(0.75) ? rng.pick(RASGOS_LISTA).id : undefined;
   return {
     id,
     nombre: p.nombre,
@@ -41,6 +43,7 @@ export function generarCandidato(rng: Rng, role: Role, indice: number, id: strin
     sueldo: Math.round((r.sueldo * indice * factor) / 10_000) * 10_000,
     avatar: avatar(rng, p.genero),
     bio: rng.pick(BIOS[role]),
+    rasgo,
   };
 }
 
@@ -77,6 +80,7 @@ export function nuevoWorker(c: Candidate, hoy: string, deskIndex: number): Worke
     ocupadoHoras: 0,
     horasMes: 0,
     horasExtraMes: 0,
+    rasgo: c.rasgo,
   };
 }
 
@@ -113,7 +117,19 @@ export function eficiencia(w: Worker, area: Area, step: StepKind): number {
   const moral = w.moral < 30 ? 0.8 : w.moral > 80 ? 1.05 : 1;
   // la revisión exige criterio: con poca experiencia se avanza muy lento
   const criterio = step === 'revision' ? 0.35 + skill / 120 : 0.45 + (skill / 100) * 0.75;
-  return w.velocidad * criterio * bonus * estres * moral;
+  const r = w.rasgo ? RASGOS[w.rasgo] : undefined;
+  const rv = r && (!r.pasos || r.pasos.includes(step)) ? (r.velocidad ?? 1) : 1;
+  return w.velocidad * criterio * bonus * estres * moral * rv;
+}
+
+/** Multiplicador de estrés por hora según rasgo. */
+export function factorEstres(w: Worker, extra: boolean): number {
+  const r = w.rasgo ? RASGOS[w.rasgo] : undefined;
+  if (!r) return 1;
+  return (r.estres ?? 1) * (extra ? (r.estresExtra ?? 1) : 1);
+}
+export function factorXp(w: Worker): number {
+  return (w.rasgo && RASGOS[w.rasgo].xp) || 1;
 }
 
 /** Probabilidad de introducir un error al completar un paso. */
@@ -121,13 +137,16 @@ export function probError(w: Worker, area: Area, step: StepKind, toolErrorMult: 
   const base = ERROR_BASE[step];
   const skill = w.skills[area];
   const estres = w.estres > 70 ? 1.35 : 1;
-  return Math.min(0.85, base * (1.6 - skill / 100) * estres * toolErrorMult);
+  const r = w.rasgo ? RASGOS[w.rasgo] : undefined;
+  const re = r && (!r.pasos || r.pasos.includes(step)) ? (r.error ?? 1) : 1;
+  return Math.min(0.85, base * (1.6 - skill / 100) * estres * toolErrorMult * re);
 }
 
 /** Probabilidad de detectar cada error en la revisión. */
 export function probDeteccion(w: Worker, area: Area, autoRevision: boolean, detectMult: number): number {
   const skill = w.skills[area];
-  return Math.min(0.97, (0.3 + (skill / 100) * 0.62) * detectMult * (autoRevision ? 0.6 : 1));
+  const rd = (w.rasgo && RASGOS[w.rasgo].detect) || 1;
+  return Math.min(0.97, (0.3 + (skill / 100) * 0.62) * detectMult * rd * (autoRevision ? 0.6 : 1));
 }
 
 export const costoLaboral = (w: Worker) => w.sueldo * (1 + CARGAS_SOCIALES);

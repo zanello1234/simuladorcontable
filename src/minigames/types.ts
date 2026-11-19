@@ -29,3 +29,22 @@ export interface MinigameMeta {
   horas: number;
   icon: string;
 }
+
+// ----------------------------------------------------------------------------- Relámpago
+// Minijuego rápido (≈45 s) que se puede jugar en cualquier momento: "despachar la pila".
+
+export interface RelampagoResult {
+  aciertos: number;
+  errores: number;
+  comboMax: number;
+  /** 0..1 */
+  score: number;
+}
+
+export interface RelampagoProps {
+  seed: number;
+  /** índice de inflación (escala los importes) */
+  indice: number;
+  onComplete: (r: RelampagoResult) => void;
+  onCancel: () => void;
+}

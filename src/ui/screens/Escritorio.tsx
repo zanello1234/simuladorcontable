@@ -7,6 +7,7 @@ import type { PlayerIdle } from '../../engine/types';
 import { AvatarFace } from '../../scene/Avatar';
 import { useGame } from '../../store/game';
 import { Bar, capacidadDiaria, cargaDe, costoMensual, Empty, ingresoMensual, pendientes, primerNombre, Section, Segmented, Stat, Toggle } from '../components';
+import { Misiones } from '../Misiones';
 import { TaskRow } from '../TaskRow';
 
 export function Escritorio() {
@@ -14,6 +15,8 @@ export function Escritorio() {
   const act = useGame((s) => s.act);
   const setTab = useGame((s) => s.setTab);
   const openWorker = useGame((s) => s.openWorker);
+  const openRelampago = useGame((s) => s.openRelampago);
+  const relampagoHoy = g.progreso.relampagoEl === g.date;
 
   const pend = pendientes(g).sort((a, b) => (a.vence < b.vence ? -1 : a.vence > b.vence ? 1 : 0));
   const horizonte = addBusinessDays(g.date, 5);
@@ -63,8 +66,13 @@ export function Escritorio() {
           )}
         </Section>
 
+        <Misiones />
+
         <Section title="🎮 Hacelas vos (modo simulador)">
-          <p className="small muted mb">Liquidá con tus propias manos: si lo hacés bien, no hay errores y ganás experiencia.</p>
+          <button className={`btn block relampago-btn ${relampagoHoy ? '' : 'primary'}`} disabled={relampagoHoy || yo.ocupadoHoras > 0} onClick={() => openRelampago(true)} title={relampagoHoy ? 'Ya despachaste la pila hoy' : '45 segundos: clasificá comprobantes y adelantá la carga'}>
+            ⚡ Despachar la pila <small>{relampagoHoy ? `· hecho hoy (récord ${g.progreso.relampagoMejor})` : '· 45 s · adelanta la carga'}</small>
+          </button>
+          <p className="small muted mb mt">Liquidá con tus propias manos: si lo hacés bien, no hay errores y ganás experiencia.</p>
           {jugables.length ? (
             <div className="task-list">
               {jugables.map((t) => (

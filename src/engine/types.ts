@@ -156,6 +156,9 @@ export interface Task {
 
 export type Role = 'titular' | 'cadete' | 'administrativo' | 'liquidador' | 'junior' | 'semisenior' | 'senior';
 
+/** Rasgo de personalidad: le da carácter a cada integrante y modifica cómo trabaja. */
+export type Rasgo = 'mateador' | 'perfeccionista' | 'rapido' | 'nocturno' | 'zen' | 'chusma' | 'hincha' | 'aprendiz' | 'detallista' | 'distraido';
+
 export type WorkerStatus = 'trabajando' | 'ocioso' | 'esperando' | 'agotado' | 'networking' | 'estudiando' | 'descansando' | 'minijuego';
 
 export interface Worker {
@@ -183,6 +186,7 @@ export interface Worker {
   /** horas trabajadas en el mes (para extras y reportes) */
   horasMes: number;
   horasExtraMes: number;
+  rasgo?: Rasgo;
 }
 
 export interface Candidate {
@@ -194,6 +198,7 @@ export interface Candidate {
   sueldo: number; // pretensión
   avatar: Avatar;
   bio: string;
+  rasgo?: Rasgo;
 }
 
 // ----------------------------------------------------------------------------- Herramientas
@@ -377,7 +382,10 @@ export type FxKind =
   | 'renuncia'
   | 'nivel'
   | 'herramienta'
-  | 'idea';
+  | 'idea'
+  | 'logro'
+  | 'mision'
+  | 'racha';
 
 export interface FxEvent {
   id: number; // creciente
@@ -459,6 +467,24 @@ export interface Stats {
   mejorCaja: number;
 }
 
+export interface NotaMensual {
+  mes: string;
+  nota: 'A' | 'B' | 'C' | 'D' | 'F';
+  puntos: number;
+  detalle: string[];
+}
+
+export interface Progreso {
+  misiones: string[]; // ids completadas
+  logros: string[]; // ids desbloqueados
+  racha: number; // presentaciones a tiempo consecutivas
+  mejorRacha: number;
+  notas: NotaMensual[];
+  /** fecha de la última partida relámpago jugada (una por día) */
+  relampagoEl?: ISODate;
+  relampagoMejor: number;
+}
+
 export interface GameState {
   version: number;
   rngState: number;
@@ -485,6 +511,7 @@ export interface GameState {
   stats: Stats;
   /** pasos del tutorial ya mostrados */
   tutorial: string[];
+  progreso: Progreso;
   gameOver?: GameOver;
   idSeq: number;
 }

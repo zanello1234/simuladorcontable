@@ -1,6 +1,7 @@
 // Ficha de un integrante del equipo (pantalla Equipo y modal desde la escena).
 import * as A from '../engine/actions';
 import { ROLES } from '../engine/config';
+import { RASGOS } from '../engine/traits';
 import { tarea } from '../engine/core';
 import { money, moneyShort } from '../engine/format';
 import { horasRestantes } from '../engine/obligations';
@@ -24,7 +25,14 @@ export function WorkerCard({ w, full }: { w: Worker; full?: boolean }) {
         <AvatarFace avatar={w.avatar} size={56} />
         <div className="col tight grow minw0">
           <b className="ellipsis">{esYo ? `${w.nombre} (vos)` : w.nombre}</b>
-          <span className="small muted">{ROLES[w.role].label}</span>
+          <span className="small muted">
+            {ROLES[w.role].label}
+            {w.rasgo && (
+              <span className="chip rasgo" title={RASGOS[w.rasgo].descripcion}>
+                {RASGOS[w.rasgo].icon} {RASGOS[w.rasgo].nombre}
+              </span>
+            )}
+          </span>
           <span className="tiny">{w.statusText}</span>
         </div>
         {!esYo && <span className="mono small">{moneyShort(w.sueldo)}</span>}

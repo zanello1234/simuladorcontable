@@ -1,6 +1,7 @@
 import * as A from '../../engine/actions';
 import { CARGAS_SOCIALES, OFICINAS, ROLES } from '../../engine/config';
 import { escritorios, precio } from '../../engine/core';
+import { RASGOS } from '../../engine/traits';
 import { moneyShort } from '../../engine/format';
 import type { PoliticaRevision } from '../../engine/types';
 import { AREAS } from '../../engine/types';
@@ -61,6 +62,14 @@ export function Equipo() {
                   </div>
                 </header>
                 <p className="small">“{c.bio}”</p>
+                {c.rasgo && (
+                  <p className="small rasgo-line">
+                    <span className="chip rasgo">
+                      {RASGOS[c.rasgo].icon} {RASGOS[c.rasgo].nombre}
+                    </span>{' '}
+                    <span className="muted">{RASGOS[c.rasgo].descripcion}</span>
+                  </p>
+                )}
                 <div className="skills">
                   {AREAS.map((a) => (
                     <div key={a} className="skill">

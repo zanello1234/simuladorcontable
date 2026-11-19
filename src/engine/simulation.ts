@@ -36,7 +36,10 @@ import { money } from './format';
 import { OBLIGACIONES, areaDe, esCritica, generarTareasDelMes, horasRestantes, multaDe } from './obligations';
 import { generarCliente } from './clients';
 import { makeRng, type Rng } from './rng';
-import { eficiencia, generarCandidatos, probDeteccion, probError } from './staff';
+import { eficiencia, factorEstres, factorXp, generarCandidatos, probDeteccion, probError } from './staff';
+import { calcularNota, evaluarProgresion, NOTA_TEXTO, registrarPresentacion } from './progression';
+import { RASGOS } from './traits';
+import { generarProspecto as genProspectoChusma } from './clients';
 import { hasEspecial, toolMods } from './tools';
 import type { GameState, Task, Worker } from './types';
 import { STEP_LABEL } from './types';
@@ -57,6 +60,7 @@ export function tick(s: GameState): void {
     simularHora(s, rng);
     s.hour += 1;
   }
+  evaluarProgresion(s);
   s.rngState = rng.state();
 }
 
@@ -164,7 +168,7 @@ function trabajar(s: GameState, rng: Rng, w: Worker, t: Task, extra: boolean): v
   w.currentTaskId = t.id;
   w.horasMes += 1;
   const carga = w.queue.reduce((a, id) => a + (tarea(s, id) ? horasRestantes(tarea(s, id)!) : 0), 0);
-  w.estres = Math.min(100, w.estres + (extra ? 2.4 : 0.35) + (carga > 40 ? 0.5 : 0));
+  w.estres = Math.min(100, w.estres + ((extra ? 2.4 : 0.35) + (carga > 40 ? 0.5 : 0)) * factorEstres(w, extra));
   if (extra) {
     w.horasExtraMes += 1;
     if (w.id !== 'player') {
@@ -205,7 +209,7 @@ export function completarPaso(s: GameState, rng: Rng, t: Task, w: Worker): void 
   } else if (rng.chance(probError(w, area, step.kind, mods.error))) {
     t.errores += 1;
   }
-  const xp = 0.12 * step.horasTotales * (1 - w.skills[area] / 100) * (w.id === 'player' ? 1 : 1.3);
+  const xp = 0.12 * step.horasTotales * (1 - w.skills[area] / 100) * (w.id === 'player' ? 1 : 1.3) * factorXp(w);
   w.skills[area] = Math.min(95, Math.round((w.skills[area] + xp) * 100) / 100);
   t.stepIndex += 1;
   if (t.stepIndex < t.steps.length) fx(s, 'paso_completo', { workerId: w.id, texto: STEP_LABEL[step.kind] });
@@ -262,6 +266,7 @@ function finalizarTarea(s: GameState, rng: Rng, t: Task, w: Worker): void {
       ajustarReputacion(s, 0.16);
       s.stats.presentadasATiempo += 1;
     } else s.stats.presentadasTarde += 1;
+    registrarPresentacion(s, !tarde);
     if (t.honorarioExtra && t.honorarioExtra > 0 && !c.propio) {
       emitirFactura(s, rng, c, t.honorarioExtra, `Honorarios: ${t.titulo}`, t.periodo);
     }
@@ -353,6 +358,16 @@ function cerrarDia(s: GameState, rng: Rng): void {
   if (multas.length) eventoMultas(s, multas);
   // prospectos (usa el networking del día)
   sortearProspecto(s, rng);
+  // rasgos que afectan al equipo
+  const moralEquipo = s.workers.reduce((a, w) => a + ((w.rasgo && RASGOS[w.rasgo].moralEquipo) || 0), 0);
+  if (moralEquipo > 0) for (const w of s.workers) w.moral = Math.min(100, w.moral + moralEquipo);
+  const chusma = s.workers.find((w) => w.rasgo === 'chusma');
+  if (chusma && s.prospects.length < 4 && rng.chance(0.03)) {
+    const pr = genProspectoChusma(rng, { nivel: s.estudio.nivel, hoy: s.date, indice: s.inflacion.indice, id: nid(s, 'c'), origen: 'colega' });
+    s.prospects.push(pr);
+    fx(s, 'prospecto_llega', { texto: corto(pr.client.nombre) });
+    msg(s, { canal: 'whatsapp', de: chusma.nombre.split(' ')[0], asunto: '🗣️ Dato: andan buscando contador', cuerpo: `Me contaron que ${corto(pr.client.nombre)} está descontento con su estudio. Ya le pasé tu número 😉`, importante: true });
+  }
   // equipo
   for (const w of [...s.workers]) {
     if (w.renunciaEl && hoy >= w.renunciaEl) {
@@ -504,7 +519,10 @@ function inicioDeDia(s: GameState, rng: Rng): void {
       });
     if (s.estudio.diasEnRojo === 30) eventoInfo(s, '🚨', 'Quedan 15 días', 'Hace 30 días hábiles que la caja está en negativo. Cobrá, recortá gastos o despedí personal.');
     if (s.estudio.diasEnRojo > 45) s.gameOver = { motivo: 'quiebra', date: s.date, texto: 'La caja estuvo en rojo demasiado tiempo. No pudiste pagar sueldos ni alquiler y tuviste que cerrar el estudio.' };
-  } else s.estudio.diasEnRojo = 0;
+  } else {
+    if (s.estudio.diasEnRojo >= 20) (s.stats as unknown as { rojoSuperado?: boolean }).rojoSuperado = true;
+    s.estudio.diasEnRojo = 0;
+  }
   if (s.estudio.reputacion <= 0 && clientesActivos(s).length === 0) s.gameOver = { motivo: 'reputacion', date: s.date, texto: 'Te quedaste sin clientes y sin reputación. Nadie quiere poner su contabilidad en tus manos.' };
 }
 
@@ -530,6 +548,21 @@ function inicioDeMes(s: GameState, rng: Rng, mesAnterior: string): void {
   const mes = monthKey(s.date);
   s.monthly.push(resumirMes(s, mesAnterior));
   if (s.monthly.length > 72) s.monthly.shift();
+  const nota = calcularNota(s, mesAnterior);
+  s.progreso.notas.push(nota);
+  if (s.progreso.notas.length > 36) s.progreso.notas.shift();
+  const nt = NOTA_TEXTO[nota.nota];
+  ajustarReputacion(s, nt.rep);
+  lanzarEvento(s, {
+    id: nid(s, 'e'),
+    defId: 'nota_mes',
+    date: s.date,
+    icon: nt.icon,
+    titulo: `Cierre de ${mesAnterior.slice(5)}/${mesAnterior.slice(0, 4)}: nota ${nota.nota}`,
+    texto: `${nt.titulo}. ${nt.frase}\n\n${nota.detalle.join(' · ')}\n\nPuntaje ${nota.puntos}/100 · Reputación ${nt.rep >= 0 ? '+' : ''}${nt.rep}`,
+    params: {},
+    opciones: [{ id: 'ok', label: nota.nota <= 'B' ? '¡Seguimos así!' : 'A mejorar' }],
+  });
   const tasa = actualizarInflacion(s, rng, DIFICULTAD[s.estudio.dificultad].inflacion);
   const propio = estudioPropio(s);
   if (propio) propio.empleados = s.workers.filter((w) => w.id !== 'player').length;

@@ -487,6 +487,22 @@ export function FxLayer({ fx, L, workerHead, clients, vbX, vbW, onDoor, onShake 
               </g>
             );
           }
+          case 'logro':
+          case 'mision':
+            return (
+              <g key={key}>
+                <Sparkle at={{ x: vbX + vbW / 2, y: 120 }} onDone={done} />
+                <Banner at={{ x: vbX + vbW / 2, y: 100 }} text={f.texto ?? (f.kind === 'logro' ? '¡Logro!' : '¡Misión cumplida!')} color={f.kind === 'logro' ? '#b8860b' : '#2f6fb5'} onDone={() => undefined} />
+              </g>
+            );
+          case 'racha':
+            return (
+              <FloatUp key={key} at={head('player')} rise={44} dur={2000} onDone={done}>
+                <Outline size={14} color="#ffd166" stroke="#7a3b00">
+                  {f.texto ?? '🔥'}
+                </Outline>
+              </FloatUp>
+            );
           case 'idea':
             return (
               <FloatUp key={key} at={head(f.workerId)} rise={34} dur={1800} onDone={done}>

@@ -1,0 +1,403 @@
+/* Minijuego IVA */
+.iva-help-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+.iva-help-row .btn {
+  flex: none;
+}
+
+.iva-machete {
+  margin-bottom: 12px;
+  background: var(--info-soft);
+  border-color: transparent;
+}
+.iva-machete ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+}
+.iva-machete li {
+  margin-bottom: 4px;
+}
+
+/* etapas */
+.iva-steps {
+  list-style: none;
+  display: flex;
+  gap: 6px;
+  padding: 0;
+  margin: 0 0 10px;
+  flex-wrap: wrap;
+}
+.iva-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+}
+.iva-steps li span {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--line);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.iva-steps li.on {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+.iva-steps li.on span {
+  background: var(--accent);
+  color: #fff;
+}
+.iva-steps li.done span {
+  background: var(--ok);
+  color: #fff;
+}
+
+/* resumen pegajoso */
+.iva-sum {
+  position: sticky;
+  top: -14px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 8px 10px;
+  margin: 0 0 12px;
+  background: var(--brand);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+}
+.iva-sum small {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+.iva-sum b {
+  font-size: 15px;
+}
+.iva-sum .bar {
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-color: transparent;
+  height: 6px;
+}
+
+/* lista de comprobantes (tabla en desktop, tarjetas en mobile) */
+.iva-list {
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--panel);
+}
+.iva-row {
+  display: grid;
+  grid-template-columns: 50px minmax(120px, 1fr) minmax(170px, 1.7fr) 112px 128px 112px 236px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  transition: background 0.2s ease;
+}
+.iva-row:last-child {
+  border-bottom: none;
+}
+.iva-row.done {
+  background: color-mix(in srgb, var(--accent-soft) 35%, transparent);
+}
+.iva-head {
+  background: var(--panel-2);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 800;
+  color: var(--ink-2);
+}
+.iva-comp,
+.iva-cp {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.iva-cp b {
+  overflow-wrap: anywhere;
+}
+.iva-concepto {
+  color: var(--ink-2);
+}
+.iva-iva small {
+  font-size: 11px;
+}
+
+.iva-seg {
+  display: inline-flex;
+  border: 1.5px solid var(--line-2);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--panel-2);
+}
+.iva-seg button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 7px 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  color: var(--ink-2);
+  min-height: 36px;
+  white-space: nowrap;
+}
+.iva-seg button + button {
+  border-left: 1px solid var(--line-2);
+}
+.iva-seg button:hover {
+  background: var(--panel);
+}
+.iva-seg .seg-debito.on {
+  background: var(--info);
+  color: #fff;
+}
+.iva-seg .seg-credito.on {
+  background: var(--accent);
+  color: #fff;
+}
+.iva-seg .seg-no_computa.on {
+  background: var(--muted);
+  color: #fff;
+}
+
+@media (max-width: 860px) {
+  .iva-head {
+    display: none;
+  }
+  .iva-list {
+    border: none;
+    background: transparent;
+    gap: 10px;
+  }
+  .iva-row {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas:
+      'comp comp fecha'
+      'cp cp cp'
+      'neto iva total'
+      'seg seg seg';
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+  }
+  .iva-row:last-child {
+    border-bottom: 1.5px solid var(--line);
+  }
+  .iva-fecha {
+    grid-area: fecha;
+    text-align: right;
+    color: var(--muted);
+  }
+  .iva-comp {
+    grid-area: comp;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  .iva-cp {
+    grid-area: cp;
+  }
+  .iva-neto {
+    grid-area: neto;
+  }
+  .iva-iva {
+    grid-area: iva;
+  }
+  .iva-total {
+    grid-area: total;
+  }
+  .iva-neto,
+  .iva-iva,
+  .iva-total {
+    text-align: left;
+    font-size: 12.5px;
+  }
+  .iva-neto::before,
+  .iva-iva::before,
+  .iva-total::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--font);
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+  .iva-seg {
+    grid-area: seg;
+    width: 100%;
+  }
+  .iva-seg button {
+    min-height: 40px;
+    font-size: 13px;
+  }
+}
+
+/* pagos a cuenta */
+.iva-pagos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.iva-pago {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.08s ease;
+}
+.iva-pago:active {
+  transform: scale(0.99);
+}
+.iva-pago.on {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 60%, var(--panel));
+}
+.iva-check {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 2px solid var(--line-2);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  color: #fff;
+  flex: none;
+  transition: background 0.15s ease;
+}
+.iva-pago.on .iva-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: pop-in 0.25s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.iva-pago-txt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.iva-pago-monto {
+  font-weight: 800;
+}
+
+/* determinación */
+.iva-det {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.iva-det-q td {
+  font-weight: 800;
+  background: var(--panel-2);
+}
+.iva-q {
+  font-size: 16px;
+  margin-top: 4px;
+}
+.iva-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.iva-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--panel);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--line-2);
+}
+.iva-opt:hover {
+  background: var(--panel-2);
+}
+.iva-opt.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 2px 0 var(--accent);
+}
+.iva-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  flex: none;
+}
+.iva-opt.on .iva-radio {
+  border-color: var(--accent);
+  background: radial-gradient(circle, var(--accent) 45%, transparent 50%);
+}
+
+/* selección: rebote sin desaparecer */
+@keyframes iva-pick {
+  0% { transform: scale(0.92); }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.iva-pick {
+  animation: iva-pick 0.25s ease-out;
+}
+
+@media (max-width: 520px) {
+  .iva-sum {
+    gap: 6px;
+    padding: 8px;
+  }
+  .iva-sum b {
+    font-size: 12.5px;
+    letter-spacing: -0.02em;
+  }
+  .iva-sum small {
+    font-size: 9.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .iva-sum > div {
+    min-width: 0;
+  }
+  .iva-help-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

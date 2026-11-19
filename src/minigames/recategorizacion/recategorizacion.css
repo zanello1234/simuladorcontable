@@ -1,0 +1,268 @@
+/* Minijuego Recategorización de Monotributo */
+.rc-steps {
+  list-style: none;
+  display: flex;
+  gap: 6px;
+  padding: 0;
+  margin: 0 0 12px;
+  flex-wrap: wrap;
+}
+.rc-steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+}
+.rc-steps li span {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--line);
+  color: var(--ink-2);
+  font-size: 12px;
+}
+.rc-steps li.on {
+  color: var(--ink);
+  border-color: var(--accent);
+}
+.rc-steps li.on span {
+  background: var(--accent);
+  color: #fff;
+}
+.rc-steps li.done span {
+  background: var(--ok);
+  color: #fff;
+}
+
+/* etapa 1: ingresos */
+.rc-ingresos {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.rc-meses .tbl td,
+.rc-meses .tbl th {
+  padding: 5px 10px;
+}
+.rc-tot td {
+  font-weight: 800;
+  background: var(--panel-2);
+}
+.rc-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rc-side h3 {
+  font-size: 16px;
+}
+.rc-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rc-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--panel);
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 2px 0 var(--line-2);
+}
+.rc-opt:disabled {
+  cursor: default;
+}
+.rc-opt.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 2px 0 var(--accent);
+}
+.rc-opt.ok {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+  box-shadow: 0 2px 0 var(--ok);
+}
+.rc-opt.bad {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  box-shadow: 0 2px 0 var(--bad);
+}
+.rc-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--line-2);
+  flex: none;
+}
+.rc-opt.on .rc-radio {
+  border-color: var(--accent);
+  background: radial-gradient(circle, var(--accent) 45%, transparent 50%);
+}
+.rc-feedback {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 14px;
+}
+.rc-feedback.ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.rc-feedback.bad {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
+/* etapa 2: parámetros */
+.rc-params {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.rc-param {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.2s ease;
+}
+.rc-param.done {
+  border-color: var(--accent);
+}
+.rc-param-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.rc-param-head span {
+  font-weight: 700;
+  color: var(--ink-2);
+  font-size: 13.5px;
+}
+.rc-param-head b {
+  font-size: 16px;
+}
+
+.rc-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.rc-picker button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 9px;
+  border: 1.5px solid var(--line-2);
+  background: var(--panel);
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--line-2);
+}
+.rc-picker button:hover {
+  background: var(--panel-2);
+}
+.rc-picker button.on {
+  background: var(--accent);
+  border-color: var(--accent-2);
+  color: #fff;
+  box-shadow: 0 2px 0 var(--accent-2);
+}
+.rc-picker button.excede {
+  font-size: 12.5px;
+  color: var(--bad);
+}
+.rc-picker button.excede.on {
+  background: var(--bad);
+  border-color: var(--bad);
+  color: #fff;
+  box-shadow: 0 2px 0 #8f2632;
+}
+.rc-picker.grande button {
+  min-width: 46px;
+  height: 46px;
+  font-size: 17px;
+}
+.rc-picker.grande button.excede {
+  font-size: 13px;
+}
+
+/* etapa 3: final */
+.rc-final {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.rc-final h3 {
+  font-size: 16px;
+  margin-top: 4px;
+}
+.rc-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.rc-res-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+}
+
+/* tabla de referencia */
+.rc-tabla {
+  margin-top: 4px;
+}
+.rc-tabla summary {
+  cursor: pointer;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: var(--ink-2);
+}
+.rc-tabla .tbl td,
+.rc-tabla .tbl th {
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+.rc-tabla p {
+  margin-top: 6px;
+}
+
+@media (max-width: 760px) {
+  .rc-ingresos {
+    grid-template-columns: 1fr;
+  }
+  .rc-params {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes rc-pick {
+  0% { transform: scale(0.9); }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.rc-pick {
+  animation: rc-pick 0.25s ease-out;
+}

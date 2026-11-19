@@ -1,0 +1,478 @@
+/* =============================================================================
+   Escena animada de la oficina
+   ============================================================================= */
+.office-scene {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #2b2420;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-x pan-y;
+}
+.office-scroll {
+  width: 100%;
+  height: 100%;
+}
+.office-scroll.scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.office-scroll.scroll::-webkit-scrollbar {
+  display: none;
+}
+.office-svg {
+  display: block;
+}
+.office-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  background: rgba(20, 28, 38, 0.82);
+  color: #fff;
+  font: 700 12px/1 system-ui, sans-serif;
+  padding: 7px 12px;
+  border-radius: 999px;
+  pointer-events: none;
+  animation: pd-hint 4.5s ease forwards;
+  white-space: nowrap;
+}
+@keyframes pd-hint {
+  0% { opacity: 0; transform: translate(-50%, 6px); }
+  10%, 80% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; }
+}
+
+/* pausa: congela personajes y ambiente (los FX siguen) */
+.office-scene.paused .ambient,
+.office-scene.paused .ambient * {
+  animation-play-state: paused !important;
+}
+.office-scene.shake .office-svg {
+  animation: pd-scene-shake 0.5s ease;
+}
+@keyframes pd-scene-shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-6px, 2px); }
+  40% { transform: translate(6px, -2px); }
+  60% { transform: translate(-4px, 1px); }
+  80% { transform: translate(3px, 0); }
+}
+
+/* interacción */
+.office-scene .clickable,
+.office-scene .worker .hit {
+  cursor: pointer;
+}
+.office-scene .clickable:hover {
+  filter: brightness(1.08) drop-shadow(0 0 4px rgba(255, 220, 120, 0.9));
+}
+.office-scene .worker:hover .desk {
+  filter: brightness(1.06);
+}
+.office-scene .bubble-tip {
+  animation: pd-fade-in 0.18s ease;
+}
+@keyframes pd-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- personajes */
+.office-scene .eyes.blink {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pd-blink 4.6s infinite;
+}
+.office-scene .worker:nth-child(2n) .eyes.blink { animation-delay: -1.7s; }
+.office-scene .worker:nth-child(3n) .eyes.blink { animation-delay: -3.1s; }
+@keyframes pd-blink {
+  0%, 93%, 100% { transform: scaleY(1); }
+  95.5% { transform: scaleY(0.1); }
+}
+.office-scene .bob {
+  animation: pd-bob 1.3s ease-in-out infinite;
+}
+@keyframes pd-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(1.4px); }
+}
+.office-scene .nod {
+  animation: pd-nod 1.6s ease-in-out infinite;
+}
+@keyframes pd-nod {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-4deg); }
+  60% { transform: rotate(3deg); }
+}
+.office-scene .typing .hand-l {
+  animation: pd-type 0.32s ease-in-out infinite alternate;
+}
+.office-scene .typing .hand-r {
+  animation: pd-type 0.32s ease-in-out infinite alternate-reverse;
+}
+.office-scene .st-minijuego .typing .hand-l,
+.office-scene .st-minijuego .typing .hand-r {
+  animation-duration: 0.2s;
+}
+@keyframes pd-type {
+  from { transform: translateY(0); }
+  to { transform: translateY(-3px); }
+}
+.office-scene .sip {
+  animation: pd-sip 4.2s ease-in-out infinite;
+}
+@keyframes pd-sip {
+  0%, 30%, 100% { transform: translate(0, 0); }
+  45%, 70% { transform: translate(-1px, -10px); }
+}
+.office-scene .thumb {
+  animation: pd-thumb 0.9s steps(2) infinite;
+}
+@keyframes pd-thumb {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(-3px, 4px); }
+}
+.office-scene .phone-glow {
+  animation: pd-glow 2s ease-in-out infinite;
+}
+@keyframes pd-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+.office-scene .gesture {
+  animation: pd-gesture 1.4s ease-in-out infinite;
+}
+@keyframes pd-gesture {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-2px, -5px); }
+}
+.office-scene .talk {
+  animation: pd-talk 0.9s ease-in-out infinite;
+}
+@keyframes pd-talk {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.95; }
+}
+.office-scene .page {
+  animation: pd-page 5s ease-in-out infinite;
+}
+@keyframes pd-page {
+  0%, 80% { transform: scaleX(1); }
+  90% { transform: scaleX(-1); opacity: 1; }
+  91%, 100% { transform: scaleX(-1); opacity: 0; }
+}
+.office-scene .steam path {
+  animation: pd-steam 2.4s ease-in-out infinite;
+}
+.office-scene .steam path:nth-child(2) { animation-delay: -1.2s; }
+@keyframes pd-steam {
+  0% { transform: translateY(2px); opacity: 0; }
+  40% { opacity: 0.9; }
+  100% { transform: translateY(-6px); opacity: 0; }
+}
+.office-scene .zzz text {
+  animation: pd-zzz 2.6s ease-in-out infinite;
+}
+.office-scene .zzz text:nth-child(2) { animation-delay: -0.9s; }
+.office-scene .zzz text:nth-child(3) { animation-delay: -1.8s; }
+@keyframes pd-zzz {
+  0% { transform: translate(0, 4px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(4px, -8px); opacity: 0; }
+}
+.office-scene .sweat {
+  animation: pd-sweat 1.5s ease-in infinite;
+}
+@keyframes pd-sweat {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0; }
+}
+.office-scene .steam-head circle {
+  animation: pd-puff 1.2s ease-out infinite;
+}
+.office-scene .steam-head circle:nth-child(2) { animation-delay: -0.6s; }
+@keyframes pd-puff {
+  0% { transform: translateY(4px) scale(0.6); opacity: 0; }
+  30% { opacity: 0.9; }
+  100% { transform: translateY(-12px) scale(1.4); opacity: 0; }
+}
+.office-scene .dots circle {
+  animation: pd-dot 1.2s ease-in-out infinite;
+}
+.office-scene .dots .d2 { animation-delay: 0.2s; }
+.office-scene .dots .d3 { animation-delay: 0.4s; }
+@keyframes pd-dot {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-2.5px); }
+}
+.office-scene .foot-tap {
+  animation: pd-tap 0.8s ease-in-out infinite;
+}
+@keyframes pd-tap {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-8deg); }
+}
+
+/* ---------------------------------------------------------------- pantallas */
+.office-scene .scr-line {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: pd-typeline 2.4s steps(6) infinite;
+}
+.office-scene .scr-line.l2 { animation-delay: -0.6s; }
+.office-scene .scr-line.l3 { animation-delay: -1.2s; }
+.office-scene .scr-line.l4 { animation-delay: -1.8s; }
+@keyframes pd-typeline {
+  0% { transform: scaleX(0.1); }
+  100% { transform: scaleX(1); }
+}
+.office-scene .scr-arca {
+  animation: pd-blink-red 0.9s steps(2) infinite;
+}
+@keyframes pd-blink-red {
+  0% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.office-scene .scr-glow-red,
+.office-scene .scr-glow {
+  animation: pd-glow 1.1s ease-in-out infinite;
+}
+.office-scene .scr-cell {
+  animation: pd-blink-red 0.7s steps(2) infinite;
+}
+.office-scene .scr-spin {
+  animation: pd-spin 1s linear infinite;
+}
+@keyframes pd-spin {
+  to { transform: rotate(360deg); }
+}
+.office-scene .scr-dot {
+  animation: pd-wander 6s ease-in-out infinite alternate;
+}
+@keyframes pd-wander {
+  0% { transform: translate(0, 0); }
+  50% { transform: translate(14px, 6px); }
+  100% { transform: translate(20px, -4px); }
+}
+
+/* ---------------------------------------------------------------- ambiente */
+.office-scene .hand-min {
+  animation: pd-spin linear infinite;
+}
+.office-scene .hand-min.stop {
+  animation-play-state: paused;
+}
+.office-scene .hand-hour {
+  transition: transform 0.6s ease;
+}
+.office-scene .cloud {
+  animation: pd-cloud 46s linear infinite;
+}
+.office-scene .cloud.c2 {
+  animation-duration: 64s;
+  animation-delay: -30s;
+}
+@keyframes pd-cloud {
+  from { transform: translateX(-60px); }
+  to { transform: translateX(var(--cw, 300px)); }
+}
+.office-scene .star {
+  animation: pd-glow 2.4s ease-in-out infinite;
+}
+.office-scene .star.s1 { animation-delay: -0.8s; }
+.office-scene .star.s2 { animation-delay: -1.6s; }
+.office-scene .boat {
+  animation: pd-boat 70s linear infinite;
+}
+@keyframes pd-boat {
+  from { transform: translateX(-40px); }
+  to { transform: translateX(840px); }
+}
+.office-scene .sway {
+  animation: pd-sway 6s ease-in-out infinite;
+}
+@keyframes pd-sway {
+  0%, 100% { transform: rotate(-1.6deg); }
+  50% { transform: rotate(1.6deg); }
+}
+.office-scene .cat-breathe {
+  animation: pd-breathe 3.2s ease-in-out infinite;
+}
+@keyframes pd-breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.02, 1.07); }
+}
+.office-scene .cat-tail {
+  animation: pd-tail 3.6s ease-in-out infinite;
+}
+@keyframes pd-tail {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  80% { transform: rotate(-14deg); }
+  90% { transform: rotate(6deg); }
+}
+.office-scene .zzz-cat {
+  animation: pd-zzz 3s ease-in-out infinite;
+}
+.office-scene .bubble {
+  animation: pd-bubble 3s ease-in infinite;
+}
+.office-scene .bubble.b2 { animation-delay: -1.4s; }
+@keyframes pd-bubble {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 0.9; }
+  100% { transform: translateY(-28px); opacity: 0; }
+}
+.office-scene .badge-pulse {
+  animation: pd-badge 1.4s ease-in-out infinite;
+}
+@keyframes pd-badge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.office-scene .ring {
+  animation: pd-ring 0.18s linear infinite;
+}
+@keyframes pd-ring {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-6deg); }
+  75% { transform: rotate(6deg); }
+}
+.office-scene .ring-waves {
+  animation: pd-blink-red 0.5s steps(2) infinite;
+}
+.office-scene .flame {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: pd-flame 0.35s ease-in-out infinite alternate;
+}
+@keyframes pd-flame {
+  from { transform: scale(1, 1) rotate(-2deg); }
+  to { transform: scale(0.9, 1.12) rotate(2deg); }
+}
+.office-scene .door-leaf {
+  transition: transform 0.45s ease;
+}
+.office-scene .door-leaf.open {
+  transform: scaleX(0.22);
+}
+.office-scene .el-l,
+.office-scene .el-r {
+  transition: transform 0.5s ease;
+}
+.office-scene .el-l.open {
+  transform: translateX(-36px);
+}
+.office-scene .el-r.open {
+  transform: translateX(36px);
+}
+
+/* ---------------------------------------------------------------- herramientas */
+.office-scene .led-blink {
+  animation: pd-led 1.1s steps(2) infinite;
+}
+.office-scene .led-blink.d1 { animation-duration: 0.7s; }
+.office-scene .led-blink.d2 { animation-duration: 1.6s; }
+.office-scene .led-blink.d3 { animation-duration: 0.45s; }
+@keyframes pd-led {
+  0% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.office-scene .up-arrow {
+  animation: pd-up 1.4s ease-in infinite;
+}
+@keyframes pd-up {
+  0% { transform: translateY(3px); opacity: 0; }
+  40% { opacity: 1; }
+  100% { transform: translateY(-5px); opacity: 0; }
+}
+.office-scene .print-paper {
+  animation: pd-print 5s ease-in-out infinite;
+}
+@keyframes pd-print {
+  0%, 30% { transform: translateY(14px); opacity: 0; }
+  35% { opacity: 1; }
+  60%, 85% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0; }
+}
+.office-scene .tablet-glow {
+  animation: pd-glow 2.6s ease-in-out infinite;
+}
+.office-scene .stamp {
+  animation: pd-stamp 3.2s ease-in-out infinite;
+}
+@keyframes pd-stamp {
+  0%, 60%, 100% { transform: translateY(-4px); }
+  70% { transform: translateY(6px); }
+  76% { transform: translateY(6px); }
+}
+.office-scene .stamp-mark {
+  animation: pd-stampmark 3.2s ease-in-out infinite;
+}
+@keyframes pd-stampmark {
+  0%, 68% { opacity: 0; }
+  72%, 95% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.office-scene .tv-bar {
+  animation: pd-bar 2.2s ease-in-out infinite alternate;
+}
+.office-scene .tv-bar.d1 { animation-delay: -0.5s; }
+.office-scene .tv-bar.d2 { animation-delay: -1.1s; }
+.office-scene .tv-bar.d3 { animation-delay: -1.7s; }
+@keyframes pd-bar {
+  from { transform: scaleY(0.55); }
+  to { transform: scaleY(1); }
+}
+.office-scene .ai-float {
+  animation: pd-float 3.4s ease-in-out infinite;
+}
+@keyframes pd-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.office-scene .ai-shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pd-shadow 3.4s ease-in-out infinite;
+}
+@keyframes pd-shadow {
+  0%, 100% { transform: scaleX(1); opacity: 0.18; }
+  50% { transform: scaleX(0.8); opacity: 0.1; }
+}
+.office-scene .ai-aura {
+  animation: pd-aura 2.6s ease-in-out infinite;
+}
+@keyframes pd-aura {
+  0%, 100% { transform: scale(0.9); opacity: 0.1; }
+  50% { transform: scale(1.1); opacity: 0.22; }
+}
+.office-scene .ai-orbit {
+  animation: pd-spin 6s linear infinite;
+}
+.office-scene .ai-eyes {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pd-blink 3.8s infinite;
+}
+.office-scene .patrol {
+  animation: pd-patrol 18s ease-in-out infinite;
+}
+@keyframes pd-patrol {
+  0%, 4% { transform: translateX(0); }
+  46%, 54% { transform: translateX(var(--d, 300px)); }
+  96%, 100% { transform: translateX(0); }
+}
+.office-scene .patrol-flip {
+  animation: pd-patrol-flip 18s steps(1) infinite;
+}
+@keyframes pd-patrol-flip {
+  0% { transform: scaleX(1); }
+  50% { transform: scaleX(-1); }
+}

@@ -1,0 +1,206 @@
+.dlg {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background: var(--bg);
+}
+.dlg-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1.5px solid var(--line);
+  background: var(--panel-2);
+}
+.dlg-head h2 {
+  font-size: 17px;
+}
+.dlg-icon {
+  font-size: 26px;
+}
+.dlg-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) 130px;
+  gap: 12px;
+  padding: 14px 16px;
+  align-items: end;
+  background: linear-gradient(180deg, var(--panel) 0%, var(--bg) 100%);
+}
+.dlg-actor {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  filter: saturate(0.75) brightness(0.92);
+  padding-bottom: 8px;
+}
+.dlg-actor.talking {
+  transform: translateY(-6px) scale(1.04);
+  filter: none;
+}
+.dlg-actor figcaption {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-2);
+  text-align: center;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dlg-log {
+  align-self: stretch;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 2px;
+  max-height: 100%;
+  scroll-behavior: smooth;
+}
+.dlg-line {
+  max-width: 82%;
+  padding: 9px 13px;
+  border-radius: 14px;
+  font-size: 14.5px;
+  line-height: 1.4;
+  box-shadow: var(--shadow);
+}
+.dlg-line p,
+.dlg-line em {
+  margin: 0;
+}
+.dlg-line.cliente {
+  align-self: flex-start;
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-bottom-left-radius: 4px;
+}
+.dlg-line.titular {
+  align-self: flex-end;
+  background: var(--accent);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.dlg-line.narrador {
+  align-self: center;
+  max-width: 92%;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink-2);
+  font-size: 13.5px;
+  text-align: center;
+  padding: 2px 10px;
+}
+.dlg-fin {
+  align-self: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--warn-soft);
+  border: 1.5px solid var(--gold);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  text-align: center;
+  margin-top: 6px;
+}
+.dlg-opts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  border-top: 1.5px solid var(--line);
+  background: var(--panel-2);
+}
+.dlg-opt {
+  flex-direction: column;
+  align-items: flex-start;
+  white-space: normal;
+  text-align: left;
+  padding: 10px 14px;
+  gap: 4px;
+  min-height: 48px;
+}
+.dlg-opt.off {
+  opacity: 0.5;
+}
+.dlg-opt-text {
+  font-size: 14.5px;
+}
+.dlg-opt-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.dlg-opt-meta small {
+  font-size: 12px;
+}
+.chip.tono {
+  border-color: transparent;
+  font-size: 11px;
+}
+.chip.tono.firme {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.chip.tono.empatico {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.chip.tono.comercial {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.chip.tono.etico {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.chip.tono.cedes {
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+@media (max-width: 720px) {
+  .dlg-stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .dlg-actor {
+    flex-direction: row;
+    gap: 8px;
+    padding: 0;
+    filter: none;
+  }
+  .dlg-actor.titular {
+    display: none;
+  }
+  .dlg-actor svg {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .dlg-actor.talking {
+    transform: none;
+  }
+  .dlg-line {
+    max-width: 92%;
+    font-size: 14px;
+  }
+  .dlg-opts {
+    padding: 10px 12px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+    max-height: 45%;
+    overflow-y: auto;
+  }
+}

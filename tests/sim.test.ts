@@ -8,6 +8,8 @@ import { tick } from '../src/engine/simulation';
 import type { GameState } from '../src/engine/types';
 import { firstBusinessDayOfMonth, monthKey } from '../src/engine/calendar';
 import { clientesActivos } from '../src/engine/core';
+import { opcionesDe } from '../src/dialog/dialogs';
+import { makeRng } from '../src/engine/rng';
 
 function piloto(s: GameState, opts: { contratar: boolean; ia: boolean }): GameState {
   return produce(s, (d) => {
@@ -18,6 +20,15 @@ function piloto(s: GameState, opts: { contratar: boolean; ia: boolean }): GameSt
       A.elegirOpcion(d, ev.id, op.id);
     }
     if (d.estudio.facturasEmitidasMes !== monthKey(d.date)) A.facturarMes(d);
+    let guard = 0;
+    while (d.dialogo && guard++ < 20) {
+      if (d.dialogo.resumen !== undefined) A.cerrarConversacion(d);
+      else {
+        const ops = opcionesDe(d.dialogo, d, makeRng(d.rngState)).filter((o) => o.habilitada);
+        if (!ops.length) break;
+        A.responderConversacion(d, ops[0].o.id);
+      }
+    }
     // el piloto "juega" las tareas que exigen al titular (con un puntaje de jugador decente)
     for (const t of d.tasks) if (t.estado === 'pendiente' && t.requiereTitular && A.minijuegoDisponible(d, t.id).ok) A.completarMinijuego(d, t.id, 0.9, 2);
     for (const p of [...d.prospects]) A.enviarPropuesta(d, p.id, p.honorarioReferencia);

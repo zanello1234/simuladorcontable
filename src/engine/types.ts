@@ -475,6 +475,16 @@ export interface Stats {
   mejorCaja: number;
 }
 
+/** Estado serializable de una conversación (el detalle vive en src/dialog) */
+export interface DialogoEstado {
+  defId: string;
+  clientId: string;
+  nodoId: string;
+  params: Record<string, number | string>;
+  historial: { quien: 'cliente' | 'titular' | 'narrador'; texto: string; mood?: 'feliz' | 'neutral' | 'triste' | 'estres' | 'dormido' | 'sorpresa' }[];
+  resumen?: string;
+}
+
 export interface NotaMensual {
   mes: string;
   nota: 'A' | 'B' | 'C' | 'D' | 'F';
@@ -520,6 +530,8 @@ export interface GameState {
   /** pasos del tutorial ya mostrados */
   tutorial: string[];
   progreso: Progreso;
+  /** conversación con un cliente en curso (bloquea el reloj, como los eventos) */
+  dialogo?: DialogoEstado;
   gameOver?: GameOver;
   idSeq: number;
 }

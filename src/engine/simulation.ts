@@ -41,6 +41,8 @@ import { eficiencia, factorEstres, factorXp, generarCandidatos, probDeteccion, p
 import { calcularNota, evaluarProgresion, NOTA_TEXTO, registrarPresentacion } from './progression';
 import { RASGOS } from './traits';
 import { asignarObligatoriasDelMes, bloqueoTitular, cerrarControl, vencerControl } from './titular';
+import { avanzar, elegirDialogo, iniciarDialogo } from '../dialog/dialogs';
+import type { DialogState } from '../dialog/types';
 import { generarProspecto as genProspectoChusma } from './clients';
 import { hasEspecial, toolMods } from './tools';
 import type { GameState, Task, Worker } from './types';
@@ -533,6 +535,14 @@ function inicioDeDia(s: GameState, rng: Rng): void {
     }
   }
   sortearEventoDiario(s, rng);
+  // conversaciones con clientes: cuando no hay evento, de vez en cuando alguien pasa por el estudio
+  if (!s.dialogo && !s.events.length && s.hour <= 9 && rng.chance(0.07 * DIFICULTAD[s.estudio.dificultad].eventos)) {
+    const r = elegirDialogo(s, rng);
+    if (r) {
+      s.dialogo = avanzar(iniciarDialogo(r.def, r.c, r.params), s, rng) as DialogState;
+      fx(s, 'cliente_llega', { clientId: r.c.id, texto: 'Quiere hablar' });
+    }
+  }
   asignacionAutomatica(s);
   // caja en rojo
   if (s.estudio.caja < 0) {

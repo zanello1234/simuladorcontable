@@ -10,6 +10,8 @@ import { makeRng, type Rng } from './rng';
 import { aplicarMinijuego, asignacionAutomatica, incorporarCliente, ordenarCola, prepararSiguientePaso, retirarWorker } from './simulation';
 import { nuevoWorker } from './staff';
 import { TOOL, hasEspecial, hasTool } from './tools';
+import { avanzar, elegirDialogo, iniciarDialogo } from '../dialog/dialogs';
+import type { DialogState } from '../dialog/types';
 import type { GameState, PlayerIdle, PoliticaRevision, ToolId } from './types';
 
 export interface Resultado {
@@ -362,4 +364,32 @@ export function completarRelampago(s: GameState, aciertos: number, errores: numb
   if (s.estudio.autoAsignar) for (const w of s.workers) ordenarCola(s, w);
   fx(s, 'idea', { texto: `⚡ ${aciertos} despachados` });
   return ok(avanzadas ? `Despachaste ${aciertos} comprobantes: adelantaste la carga de ${avanzadas} tarea/s.` : `${aciertos} aciertos. No había carga pendiente para adelantar, pero bajaste el estrés.`);
+}
+
+// ----------------------------------------------------------------------------- conversaciones
+
+export function iniciarConversacion(s: GameState, forzarDefId?: string, clientId?: string): Resultado {
+  if (s.dialogo) return no('Ya hay una conversación en curso.');
+  return conRng(s, (rng) => {
+    const r = elegirDialogo(s, rng);
+    if (!r) return no('Nadie quiere hablar ahora.');
+    void forzarDefId;
+    void clientId;
+    s.dialogo = avanzar(iniciarDialogo(r.def, r.c, r.params), s, rng) as DialogState;
+    return ok('');
+  });
+}
+
+export function responderConversacion(s: GameState, opcionId: string): Resultado {
+  if (!s.dialogo) return no('');
+  return conRng(s, (rng) => {
+    s.dialogo = avanzar(s.dialogo as DialogState, s, rng, opcionId) as DialogState;
+    return ok('');
+  });
+}
+
+export function cerrarConversacion(s: GameState): Resultado {
+  const r = s.dialogo?.resumen ?? '';
+  s.dialogo = undefined;
+  return ok(r);
 }

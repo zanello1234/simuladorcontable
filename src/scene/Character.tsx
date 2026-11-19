@@ -3,6 +3,7 @@ import { memo } from 'react';
 import type { Avatar, WorkerStatus } from '../engine/types';
 import { Head, type Mood } from './Avatar';
 import type { DeskStyle } from './layout';
+import { Shadow } from './Defs';
 import { shade } from './util';
 
 export type ScreenMode = 'off' | 'arca' | 'work' | 'grid' | 'erp' | 'mini' | 'idle' | 'sleep' | 'wait';
@@ -120,6 +121,7 @@ function Screen({ mode }: { mode: ScreenMode }) {
           <rect className="scr-line l2" x={5} y={13} width={20} height={1.8} fill="#9fb3c8" />
           <rect className="scr-line l3" x={5} y={17} width={24} height={1.8} fill="#9fb3c8" />
           <rect className="scr-line l4" x={5} y={21} width={14} height={1.8} fill="#9fb3c8" />
+          <rect className="scr-cursor" x={20} y={20.6} width={1.2} height={2.6} fill="#2f6fb5" />
         </g>
       );
     default:
@@ -137,29 +139,42 @@ function Desk({ style, player, nombre }: { style: DeskStyle; player: boolean; no
   const c = player && style !== 'home' ? PLAYER_DESK : DESK[style];
   const w = player ? 74 : 68;
   const label = player ? 'TITULAR' : nombre.split(' ')[0].toUpperCase().slice(0, 10);
+  const wood = style !== 'corp';
   return (
     <g className="desk">
-      <ellipse cx={0} cy={48} rx={w + 4} ry={5} fill="#000" opacity={0.13} />
+      <Shadow x={0} y={48} rx={w + 10} ry={7} />
       <polygon points={`${-w + 4},-12 ${w - 4},-12 ${w},0 ${-w},0`} fill={c.top} />
-      <line x1={-w + 4} y1={-12} x2={w - 4} y2={-12} stroke={shade(c.top, 0.25)} strokeWidth={1} />
+      {wood && <polygon points={`${-w + 4},-12 ${w - 4},-12 ${w},0 ${-w},0`} fill="url(#pd-wood)" />}
+      <polygon points={`${-w + 4},-12 ${w - 4},-12 ${w},0 ${-w},0`} fill="url(#pd-top)" />
+      <line x1={-w + 4} y1={-12} x2={w - 4} y2={-12} stroke={shade(c.top, 0.35)} strokeWidth={1} />
+      <line x1={-w} y1={0.5} x2={w} y2={0.5} stroke="#000" strokeOpacity={0.22} strokeWidth={1} />
       {style === 'home' ? (
         <g>
           <rect x={-w} y={0} width={w * 2} height={7} rx={1.5} fill={c.front} />
+          <rect x={-w} y={0} width={w * 2} height={7} rx={1.5} fill="url(#pd-wood)" />
+          <rect x={-w} y={0} width={w * 2} height={7} rx={1.5} fill="url(#pd-side)" />
           <rect x={-w + 6} y={7} width={6} height={39} fill={c.edge} />
+          <rect x={-w + 6} y={7} width={6} height={39} fill="url(#pd-metal)" />
           <rect x={w - 12} y={7} width={6} height={39} fill={c.edge} />
+          <rect x={w - 12} y={7} width={6} height={39} fill="url(#pd-metal)" />
           <line x1={-w} y1={7} x2={w} y2={7} stroke={c.edge} strokeWidth={1.2} />
         </g>
       ) : style === 'corp' ? (
         <g>
           <rect x={-w} y={0} width={w * 2} height={5} fill={c.front} />
+          <rect x={-w} y={0} width={w * 2} height={5} fill="url(#pd-side)" />
           <rect x={-w + 4} y={5} width={4} height={41} fill="#8c96a3" />
+          <rect x={-w + 4} y={5} width={4} height={41} fill="url(#pd-metal)" />
           <rect x={w - 8} y={5} width={4} height={41} fill="#8c96a3" />
+          <rect x={w - 8} y={5} width={4} height={41} fill="url(#pd-metal)" />
           <rect x={-w + 8} y={10} width={w * 2 - 16} height={22} fill="#dfe8f1" opacity={0.65} />
           {player && <rect x={-w + 8} y={10} width={w * 2 - 16} height={22} fill="#7b4a28" opacity={0.35} />}
         </g>
       ) : (
         <g>
           <rect x={-w} y={0} width={w * 2} height={46} rx={2} fill={c.front} />
+          <rect x={-w} y={0} width={w * 2} height={46} rx={2} fill="url(#pd-wood)" />
+          <rect x={-w} y={0} width={w * 2} height={46} rx={2} fill="url(#pd-side)" />
           <rect x={-w} y={0} width={w * 2} height={4} fill={shade(c.front, -0.12)} />
           <rect x={w - 34} y={8} width={28} height={16} rx={1.5} fill={shade(c.front, 0.08)} stroke={c.edge} strokeWidth={1} />
           <rect x={w - 34} y={26} width={28} height={16} rx={1.5} fill={shade(c.front, 0.08)} stroke={c.edge} strokeWidth={1} />
@@ -179,14 +194,24 @@ function Desk({ style, player, nombre }: { style: DeskStyle; player: boolean; no
   );
 }
 
+const GLOW: Partial<Record<ScreenMode, string>> = { arca: 'url(#pd-monGlowRed)', mini: 'url(#pd-monGlowGreen)', off: 'none', sleep: 'none' };
+
 function Monitor({ mode, token }: { mode: ScreenMode; token: boolean }) {
+  const glow = GLOW[mode] ?? 'url(#pd-monGlow)';
   return (
     <g className="monitor">
+      {/* reflejo de la pantalla sobre la tapa del escritorio */}
+      {glow !== 'none' && <ellipse cx={-40} cy={-8} rx={30} ry={7} fill={glow} opacity={0.7} />}
       <ellipse cx={-46} cy={-10} rx={10} ry={2.6} fill="#2a313b" />
+      <ellipse cx={-46} cy={-10.6} rx={9} ry={1.8} fill="#4a5361" />
       <rect x={-48} y={-26} width={4.5} height={16} fill="#3a434f" />
+      <rect x={-48} y={-26} width={4.5} height={16} fill="url(#pd-metal)" />
       <g transform="translate(-68,-56) skewY(6)">
+        <rect x={-0.5} y={-0.5} width={41} height={29} rx={3} fill="#0d1117" />
         <rect x={0} y={0} width={40} height={28} rx={2.5} fill="#1f2630" />
+        <rect x={0} y={0} width={40} height={28} rx={2.5} fill="url(#pd-metal)" opacity={0.5} />
         <Screen mode={mode} />
+        <path d="M2.5 2.5 L22 2.5 L2.5 18 Z" fill="#ffffff" opacity={0.07} />
         {mode === 'arca' && <rect className="scr-glow-red" x={-3} y={-3} width={46} height={34} rx={4} fill="none" stroke="#ff4d5e" strokeWidth={2} />}
         {mode === 'mini' && <rect className="scr-glow" x={-3} y={-3} width={46} height={34} rx={4} fill="none" stroke="#6ef0a4" strokeWidth={2} />}
       </g>
@@ -223,8 +248,13 @@ function Papers({ n }: { n: number }) {
 
 const Mate = () => (
   <g>
+    <g className="steam" stroke="#ffffff" strokeWidth={1.1} fill="none" strokeLinecap="round" opacity={0.7}>
+      <path d="M8 -40 Q6 -44 8 -48" />
+      <path d="M12 -41 Q10 -45 12 -49" />
+    </g>
     <line x1={11.5} y1={-35} x2={4} y2={-46} stroke="#c9ced6" strokeWidth={1.6} strokeLinecap="round" />
     <ellipse cx={10} cy={-29} rx={6.2} ry={7.2} fill="#8b5a2b" />
+    <ellipse cx={10} cy={-29} rx={6.2} ry={7.2} fill="url(#pd-skinShade)" />
     <rect x={4} y={-33} width={12} height={2.6} fill="#c9a24a" />
     <ellipse cx={10} cy={-35.3} rx={4.6} ry={1.6} fill="#6b8e23" />
   </g>
@@ -234,7 +264,12 @@ const Mate = () => (
 function Arms({ status, a }: { status: WorkerStatus; a: Avatar }) {
   const sleeve = a.ropa;
   const arm = { stroke: sleeve, strokeWidth: 8, strokeLinecap: 'round' as const, fill: 'none' };
-  const hand = (x: number, y: number, k?: string) => <circle key={k} className="hand" cx={x} cy={y} r={4.6} fill={a.piel} />;
+  const hand = (x: number, y: number, k?: string) => (
+    <g key={k} className="hand">
+      <circle cx={x} cy={y} r={4.6} fill={a.piel} />
+      <circle cx={x} cy={y} r={4.6} fill="url(#pd-skinShade)" />
+    </g>
+  );
   switch (status) {
     case 'trabajando':
     case 'minijuego':
@@ -338,6 +373,48 @@ function Arms({ status, a }: { status: WorkerStatus; a: Avatar }) {
   }
 }
 
+/** Silla: de madera en casa; giratoria con base de 5 patas y ruedas en oficinas. */
+function Chair({ color, style, player }: { color: string; style: DeskStyle; player: boolean }) {
+  const w = player ? 28 : 24;
+  const top = player ? -88 : -78;
+  const h = player ? 82 : 70;
+  if (style === 'home' && !player) {
+    return (
+      <g>
+        <rect x={-w} y={top} width={w * 2} height={h} rx={8} fill={color} />
+        <rect x={-w} y={top} width={w * 2} height={h} rx={8} fill="url(#pd-wood)" />
+        <rect x={-w} y={top} width={w * 2} height={h} rx={8} fill="url(#pd-cloth)" />
+        {[-12, 0, 12].map((dx) => (
+          <rect key={dx} x={dx - 2} y={top + 8} width={4} height={h - 20} rx={2} fill="#000" opacity={0.12} />
+        ))}
+      </g>
+    );
+  }
+  return (
+    <g>
+      {/* base de 5 patas y ruedas (asoma debajo del escritorio) */}
+      <g transform="translate(0,44)">
+        <rect x={-2.5} y={-18} width={5} height={14} fill="#3a4049" />
+        <rect x={-2.5} y={-18} width={5} height={14} fill="url(#pd-metal)" />
+        <path d="M-30 2 L-14 -4 L0 -4 L14 -4 L30 2" stroke="#3a4049" strokeWidth={4} fill="none" strokeLinecap="round" />
+        <path d="M-20 0 L0 -4 L20 0" stroke="#4a515b" strokeWidth={3} fill="none" strokeLinecap="round" />
+        {[-30, -14, 14, 30].map((dx) => (
+          <circle key={dx} cx={dx} cy={3} r={3} fill="#1e2228" />
+        ))}
+      </g>
+      {/* respaldo */}
+      <rect x={-w} y={top} width={w * 2} height={h} rx={12} fill={shade(color, -0.2)} />
+      <rect x={-w + 3} y={top + 3} width={w * 2 - 6} height={h - 6} rx={10} fill={color} />
+      <rect x={-w + 3} y={top + 3} width={w * 2 - 6} height={h - 6} rx={10} fill="url(#pd-fabric)" />
+      <rect x={-w + 3} y={top + 3} width={w * 2 - 6} height={h - 6} rx={10} fill="url(#pd-cloth)" />
+      <path d={`M${-w + 8} ${top + 14} Q0 ${top + 10} ${w - 8} ${top + 14}`} stroke="#fff" strokeOpacity={0.18} strokeWidth={2} fill="none" />
+      {/* apoyabrazos */}
+      <rect x={-w - 4} y={-26} width={7} height={5} rx={2.5} fill={shade(color, -0.3)} />
+      <rect x={w - 3} y={-26} width={7} height={5} rx={2.5} fill={shade(color, -0.3)} />
+    </g>
+  );
+}
+
 /** Trabajador sentado en su escritorio. Origen: borde frontal de la tapa del escritorio. */
 export const SeatedWorker = memo(function SeatedWorker(p: SeatedWorkerProps) {
   const { avatar: a, status } = p;
@@ -347,20 +424,16 @@ export const SeatedWorker = memo(function SeatedWorker(p: SeatedWorkerProps) {
   const asleep = status === 'agotado';
   const headY = asleep ? -34 : status === 'esperando' || status === 'estudiando' ? -64 : -66;
   const scale = p.isPlayer ? p.s * 1.04 : p.s;
+  const glowFace = p.dark || p.screen === 'off' || p.screen === 'sleep' || asleep ? null : p.screen === 'arca' ? 'red' : p.screen === 'mini' ? 'green' : 'blue';
   return (
     <g transform={`translate(${p.x},${p.y}) scale(${scale})`} className={`worker st-${status}${p.isPlayer ? ' is-player' : ''}`}>
-      {/* respaldo de la silla */}
-      {p.isPlayer ? (
-        <g>
-          <rect x={-28} y={-88} width={56} height={82} rx={13} fill={chairColor} />
-          <rect x={-22} y={-82} width={44} height={70} rx={10} fill={shade(chairColor, 0.1)} />
-        </g>
-      ) : (
-        <rect x={-24} y={-76} width={48} height={68} rx={10} fill={chairColor} />
-      )}
+      <Chair color={chairColor} style={p.deskStyle} player={p.isPlayer} />
       <g className={asleep ? 'body slump' : 'body'}>
         <g transform={asleep ? 'translate(0,6)' : undefined}>
           <path d="M-21 -10 L-21 -38 Q-21 -47 -11 -48 L11 -48 Q21 -47 21 -38 L21 -10 Z" fill={a.ropa} />
+          <path d="M-21 -10 L-21 -38 Q-21 -47 -11 -48 L11 -48 Q21 -47 21 -38 L21 -10 Z" fill="url(#pd-cloth)" />
+          {/* pliegues */}
+          <path d="M-12 -24 Q-10 -18 -13 -11 M10 -26 Q13 -19 11 -11" stroke="#000" strokeOpacity={0.16} strokeWidth={1} fill="none" strokeLinecap="round" />
           <path d="M-21 -30 Q-21 -24 -17 -20 L-17 -10 L-21 -10 Z" fill={shade(a.ropa, -0.12)} />
           {p.isPlayer ? (
             <g>
@@ -372,9 +445,13 @@ export const SeatedWorker = memo(function SeatedWorker(p: SeatedWorkerProps) {
           )}
           {!asleep && <rect x={-4.5} y={-54} width={9} height={8} fill={shade(a.piel, -0.12)} />}
         </g>
+        {/* sombra de la cabeza sobre el torso */}
+        {!asleep && <ellipse cx={1} cy={headY + 19} rx={13} ry={4.5} fill="#000" opacity={0.2} />}
         <g className="headwrap" transform={`translate(${asleep ? 3 : 0},${headY})${asleep ? ' rotate(14)' : ''}`}>
           <g className={status === 'trabajando' || status === 'minijuego' ? 'bob' : status === 'networking' ? 'nod' : undefined}>
             <Head a={a} mood={mood} />
+            {/* luz del monitor sobre la cara */}
+            {glowFace && <path d="M-15 -6 Q-9 14 0 15 Q-4 2 -3 -12 Z" fill={glowFace === 'red' ? '#ff6a6a' : glowFace === 'green' ? '#8af0b0' : '#9fd4ff'} opacity={0.2} />}
             {status === 'esperando' && <ellipse cx={0} cy={8} rx={11} ry={7} fill="#9fdcff" opacity={0.18} />}
             {p.estres > 90 && <circle r={16} fill="#ff3b3b" opacity={0.28} />}
           </g>
@@ -444,7 +521,7 @@ export function StandingPerson({ a, carry = 'folder', walking = false }: { a: Av
   const inspector = carry === 'briefcase';
   return (
     <g className={walking ? 'person walking' : 'person'}>
-      <ellipse cx={0} cy={1} rx={18} ry={4} fill="#000" opacity={0.15} />
+      <Shadow x={0} y={1} rx={22} ry={5} />
       <g className="leg leg-l" style={{ transformOrigin: '-6px -42px' }}>
         <rect x={-10.5} y={-42} width={9} height={40} rx={3} fill={pants} />
         <ellipse cx={-6.5} cy={-1.5} rx={7} ry={3.4} fill="#2b2622" />
@@ -454,6 +531,7 @@ export function StandingPerson({ a, carry = 'folder', walking = false }: { a: Av
         <ellipse cx={6.5} cy={-1.5} rx={7} ry={3.4} fill="#2b2622" />
       </g>
       <path d="M-17 -40 L-17 -70 Q-17 -79 -8 -80 L8 -80 Q17 -79 17 -70 L17 -40 Z" fill={a.ropa} />
+      <path d="M-17 -40 L-17 -70 Q-17 -79 -8 -80 L8 -80 Q17 -79 17 -70 L17 -40 Z" fill="url(#pd-cloth)" />
       {inspector ? (
         <g>
           <path d="M-6 -80 L0 -66 L6 -80 Z" fill="#ffffff" />
@@ -496,12 +574,14 @@ export function SeatedInspector() {
   const pants = shade(a.ropa, -0.45);
   return (
     <g className="inspector-seated">
-      <ellipse cx={0} cy={1} rx={26} ry={4} fill="#000" opacity={0.15} />
+      <Shadow x={0} y={1} rx={30} ry={5} />
       <rect x={-22} y={-92} width={44} height={56} rx={8} fill="#7c5a3c" />
+      <rect x={-22} y={-92} width={44} height={56} rx={8} fill="url(#pd-cloth)" />
       <rect x={-24} y={-40} width={48} height={8} rx={3} fill="#8d6847" />
       <rect x={-20} y={-32} width={4} height={32} fill="#5b4029" />
       <rect x={16} y={-32} width={4} height={32} fill="#5b4029" />
       <path d="M-17 -38 L-17 -66 Q-17 -75 -8 -76 L8 -76 Q17 -75 17 -66 L17 -38 Z" fill={a.ropa} />
+      <path d="M-17 -38 L-17 -66 Q-17 -75 -8 -76 L8 -76 Q17 -75 17 -66 L17 -38 Z" fill="url(#pd-cloth)" />
       <path d="M-6 -76 L0 -62 L6 -76 Z" fill="#ffffff" />
       <path d="M-1.8 -74 L1.8 -74 L2.6 -56 L0 -52 L-2.6 -56 Z" fill="#20314d" />
       <rect x={-14} y={-62} width={10} height={13} rx={1.4} fill="#ffffff" stroke="#9aa3ad" strokeWidth={0.6} />

@@ -1,6 +1,7 @@
 // Objetos que aparecen en la oficina al comprar herramientas (progreso visible tipo SimCity).
 import { memo } from 'react';
 import type { ToolId } from '../engine/types';
+import { Shadow } from './Defs';
 import type { LevelLayout } from './layout';
 
 const SANS = 'system-ui, -apple-system, Segoe UI, sans-serif';
@@ -23,9 +24,11 @@ function Rack({ x, y, units, erp, small }: { x: number; y: number; units: number
   const h = 126;
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx={0} cy={0} rx={30} ry={3.5} fill="#000" opacity={0.15} />
+      <Shadow x={0} y={0} rx={34} ry={4.5} />
       <rect x={-26} y={-h} width={52} height={h} rx={3} fill="#22272e" />
+      <rect x={-26} y={-h} width={52} height={h} rx={3} fill="url(#pd-metal)" />
       <rect x={-22} y={-h + 4} width={44} height={h - 8} rx={2} fill="#2c323b" />
+      <rect x={-24} y={-h} width={3} height={h} fill="#ffffff" opacity={0.08} />
       {Array.from({ length: 10 }, (_, i) => {
         const on = i < units;
         return (
@@ -56,8 +59,9 @@ function Rack({ x, y, units, erp, small }: { x: number; y: number; units: number
 function Ups({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx={0} cy={0} rx={16} ry={3} fill="#000" opacity={0.15} />
+      <Shadow x={0} y={0} rx={20} ry={4} />
       <rect x={-13} y={-40} width={26} height={40} rx={3} fill="#1f242b" />
+      <rect x={-13} y={-40} width={26} height={40} rx={3} fill="url(#pd-metal)" />
       <rect x={-8} y={-34} width={16} height={8} rx={1} fill="#9de29d" />
       <text x={0} y={-28} textAnchor="middle" fontSize={5.4} fontWeight={900} fill="#1f4d1f" fontFamily={SANS}>
         100%
@@ -221,7 +225,7 @@ function BotArca({ x0, x1, y }: { x0: number; x1: number; y: number }) {
     <g transform={`translate(${x0},${y})`}>
       <g className="patrol" style={{ ['--d' as string]: `${d}px` }}>
         <g className="patrol-flip">
-          <ellipse cx={0} cy={0} rx={14} ry={2.6} fill="#000" opacity={0.18} />
+          <Shadow x={0} y={0} rx={18} ry={3.4} />
           <circle cx={-8} cy={-4} r={4} fill="#2b313a" />
           <circle cx={8} cy={-4} r={4} fill="#2b313a" />
           <rect x={-13} y={-24} width={26} height={18} rx={5} fill="#e8b93a" />

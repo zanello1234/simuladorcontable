@@ -9,6 +9,8 @@ import { FxLayer } from './Fx';
 import { BASE_H, BASE_W, headPos, layoutFor, type DeskSlot } from './layout';
 import { BackProps, FrontProps, screenForTools } from './Props';
 import { AmbientLight, Backdrop } from './Rooms';
+import { SceneDefs, SkinDefs } from './Defs';
+import { isRainy } from './util';
 import './scene.css';
 
 export interface OfficeSceneProps {
@@ -22,7 +24,7 @@ export interface OfficeSceneProps {
 const MIN_VB = 1140;
 
 function screenFor(w: Worker, s: GameState, working: ScreenMode): ScreenMode {
-  if (s.flags.corteLuz) return 'off';
+  if (s.flags.corteLuz && !s.tools.includes('ups')) return 'off';
   if (w.status === 'agotado') return 'sleep';
   if (s.flags.arcaCaida) return 'arca';
   if (w.status === 'minijuego') return 'mini';
@@ -138,6 +140,8 @@ export function OfficeScene({ state, onWorkerClick, onDoorClick, onCalendarClick
   }, [placed]);
 
   const working = screenForTools(state.tools);
+  const rain = state.flags.corteLuz || isRainy(state.date);
+  const ups = state.tools.includes('ups');
   const msPerHour = state.speed === 0 ? MS_POR_HORA[1] : MS_POR_HORA[state.speed];
   const paused = state.speed === 0;
   const token = state.tools.includes('firma_digital');
@@ -159,7 +163,7 @@ export function OfficeScene({ state, onWorkerClick, onDoorClick, onCalendarClick
       deskStyle={L.deskStyle}
       screen={screenFor(w, state, working)}
       token={token && w.id === 'player'}
-      dark={state.flags.corteLuz}
+      dark={state.flags.corteLuz && !ups}
       onClick={handleWorkerClick}
       onHover={handleHover}
     />
@@ -179,6 +183,8 @@ export function OfficeScene({ state, onWorkerClick, onDoorClick, onCalendarClick
       role="img"
       aria-label={`Oficina: ${OFICINAS[level].nombre}`}
     >
+      <SceneDefs />
+      <SkinDefs />
       <g className="ambient">
         <Backdrop
           level={level}
@@ -192,6 +198,7 @@ export function OfficeScene({ state, onWorkerClick, onDoorClick, onCalendarClick
           doorOpen={doorOpen}
           estudio={state.estudio.nombre}
           arcaCaida={state.flags.arcaCaida}
+          rain={rain}
           onDoorClick={onDoorClick}
           onCalendarClick={onCalendarClick}
         />
@@ -204,8 +211,8 @@ export function OfficeScene({ state, onWorkerClick, onDoorClick, onCalendarClick
         )}
         {front.map(renderWorker)}
         <FrontProps tools={state.tools} L={L} />
-        <AmbientLight hour={state.hour} vbX={vbX} vbW={vbW} />
-        {state.flags.corteLuz && <Blackout vbX={vbX} vbW={vbW} at={playerSlot ? { x: playerSlot.x + 40, y: playerSlot.y - 20 } : { x: 600, y: 360 }} />}
+        <AmbientLight hour={state.hour} vbX={vbX} vbW={vbW} rain={rain} />
+        {state.flags.corteLuz && <Blackout vbX={vbX} vbW={vbW} at={playerSlot ? { x: playerSlot.x + 40, y: playerSlot.y - 20 } : { x: 600, y: 360 }} ups={ups} desks={placed.map((pl) => ({ x: pl.slot.x - 46 * pl.slot.s, y: pl.slot.y - 40 * pl.slot.s }))} />}
         {state.flags.prorroga && (
           <g transform={`translate(${L.calendar.x - 6},${L.calendar.y + 62})`}>
             <rect x={0} y={0} width={64} height={14} rx={3} fill="#1f8a70" />
@@ -254,18 +261,25 @@ function Bubble({ w, slot, vbX, vbW }: { w: Worker; slot: DeskSlot; vbX: number;
   );
 }
 
-function Blackout({ vbX, vbW, at }: { vbX: number; vbW: number; at: { x: number; y: number } }) {
+function Blackout({ vbX, vbW, at, ups, desks }: { vbX: number; vbW: number; at: { x: number; y: number }; ups: boolean; desks: { x: number; y: number }[] }) {
   return (
     <g pointerEvents="none">
       <defs>
         <radialGradient id="blackoutGrad" gradientUnits="userSpaceOnUse" cx={at.x} cy={at.y} r={300}>
           <stop offset="0" stopColor="#ffb347" stopOpacity={0.12} />
           <stop offset="0.18" stopColor="#0a0d1e" stopOpacity={0.45} />
-          <stop offset="1" stopColor="#05070f" stopOpacity={0.86} />
+          <stop offset="1" stopColor="#05070f" stopOpacity={ups ? 0.72 : 0.86} />
+        </radialGradient>
+        <radialGradient id="blackoutScreen">
+          <stop offset="0" stopColor="#8fc8ff" stopOpacity={0.35} />
+          <stop offset="1" stopColor="#8fc8ff" stopOpacity={0} />
         </radialGradient>
       </defs>
       <rect x={vbX - 10} y={0} width={vbW + 20} height={BASE_H} fill="url(#blackoutGrad)" />
+      {/* con UPS: las notebooks iluminan de azul cada puesto */}
+      {ups && desks.map((d, i) => <ellipse key={i} cx={d.x} cy={d.y} rx={70} ry={48} fill="url(#blackoutScreen)" />)}
       <g transform={`translate(${at.x},${at.y})`}>
+        <ellipse cx={0} cy={-6} rx={40} ry={30} fill="url(#pd-lamp)" />
         <rect x={-4} y={-6} width={8} height={18} rx={1.5} fill="#f4efe1" />
         <ellipse cx={0} cy={12} rx={8} ry={2.4} fill="#c9a24a" />
         <g className="flame">

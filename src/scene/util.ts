@@ -59,3 +59,8 @@ export function hashNum(s: string): number {
   }
   return (h >>> 0) / 4294967296;
 }
+
+/** ¿Llueve hoy? Determinístico por fecha (≈10% de los días). */
+export function isRainy(date: string): boolean {
+  return hashNum(`lluvia:${date}`) < 0.1;
+}

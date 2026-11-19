@@ -1,6 +1,7 @@
 // Dibujo de personajes: cabeza reutilizable (escena y retratos) + retrato AvatarFace.
 import { memo } from 'react';
 import type { Avatar } from '../engine/types';
+import { SkinDefs } from './Defs';
 import { shade } from './util';
 
 export type Mood = 'feliz' | 'neutral' | 'triste' | 'estres' | 'dormido' | 'sorpresa';
@@ -84,6 +85,17 @@ function HairFront({ a }: { a: Avatar }) {
   }
 }
 
+/** Brillo y sombra del pelo (volumen) encima de la forma del peinado. */
+function HairShine({ a }: { a: Avatar }) {
+  if (a.peinado === 'pelado') return null;
+  return (
+    <g pointerEvents="none">
+      <path d="M-16.4 -1 C-18 -15 -9 -21 0 -21 C9 -21 18 -15 16.4 -1 L12 -4 Q0 -13 -12 -4 Z" fill="url(#pd-hairShine)" />
+      <path d="M-9 -16 Q-4 -19.5 2 -18.6" stroke="#ffffff" strokeWidth={2} fill="none" strokeLinecap="round" opacity={0.22} />
+    </g>
+  );
+}
+
 function Mouth({ mood }: { mood: Mood }) {
   const p = { stroke: '#7a3b2e', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' as const };
   switch (mood) {
@@ -114,7 +126,13 @@ export const Head = memo(function Head({ a, mood = 'neutral', blink = true }: { 
       <circle cx={-15.6} cy={2.4} r={3.6} fill={a.piel} />
       <circle cx={15.6} cy={2.4} r={3.6} fill={a.piel} />
       <circle r={16} fill={a.piel} />
+      <circle r={16} fill="url(#pd-skinShade)" />
       <path d="M-14 8 Q0 22 14 8 Q10 16 0 16.4 Q-10 16 -14 8 Z" fill={skinShadow} opacity={0.35} />
+      {/* sombra bajo el pelo / frente y pómulos */}
+      <path d="M-13 -4 Q0 -1 13 -4 Q10 -7 0 -8 Q-10 -7 -13 -4 Z" fill={skinShadow} opacity={0.22} />
+      <path d="M-15 4 Q-13 10 -9 12" stroke={skinShadow} strokeWidth={1.6} fill="none" opacity={0.3} strokeLinecap="round" />
+      <path d="M15 4 Q13 10 9 12" stroke={skinShadow} strokeWidth={1.6} fill="none" opacity={0.45} strokeLinecap="round" />
+      <ellipse cx={-6} cy={-3} rx={6} ry={4} fill="#ffffff" opacity={0.08} />
       {a.barba && <path d="M-15.4 2 Q-15.6 17.6 0 19.6 Q15.6 17.6 15.4 2 Q11.4 9.4 6 9.8 Q0 8.2 -6 9.8 Q-11.4 9.4 -15.4 2 Z" fill={a.pelo} />}
       <circle cx={-9.6} cy={6.4} r={2.6} fill="#ff8a80" opacity={0.28} />
       <circle cx={9.6} cy={6.4} r={2.6} fill="#ff8a80" opacity={0.28} />
@@ -137,6 +155,7 @@ export const Head = memo(function Head({ a, mood = 'neutral', blink = true }: { 
       </g>
       <Mouth mood={mood} />
       <HairFront a={a} />
+      <HairShine a={a} />
       {a.anteojos && (
         <g stroke="#26262e" strokeWidth={1.4} fill="rgba(255,255,255,0.18)">
           <circle cx={-5.6} cy={1.6} r={4.6} />
@@ -156,7 +175,9 @@ function Shoulders({ a }: { a: Avatar }) {
     <g>
       <rect x={-4} y={13} width={8} height={7} fill={shade(a.piel, -0.12)} />
       <path d="M-21 34 Q-21 21 -9 19 L9 19 Q21 21 21 34 Z" fill={a.ropa} />
+      <path d="M-21 34 Q-21 21 -9 19 L9 19 Q21 21 21 34 Z" fill="url(#pd-cloth)" />
       <path d="M-5 19 L0 25 L5 19 Z" fill={shade(a.ropa, 0.55)} />
+      <path d="M-4 20 Q0 24 4 20" stroke="#000" strokeOpacity={0.2} strokeWidth={0.8} fill="none" />
     </g>
   );
 }
@@ -179,6 +200,7 @@ export const AvatarFace = memo(function AvatarFace({
   return (
     <svg width={size} height={size} viewBox="-24 -26 48 48" role="img" aria-label={title ?? 'avatar'} style={{ display: 'block', flex: 'none' }}>
       {title && <title>{title}</title>}
+      <SkinDefs />
       {bg && <circle cx={0} cy={-2} r={24} fill={bg} />}
       <Shoulders a={avatar} />
       <g transform="translate(0,-2) scale(0.92)">

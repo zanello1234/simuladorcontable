@@ -2,6 +2,7 @@
 import { memo, useId } from 'react';
 import { MESES_CORTOS, day, month } from '../engine/calendar';
 import { BACK_BASE, FLOOR_Y, WALL_BASE, type LevelLayout, type Rect } from './layout';
+import { Shadow } from './Defs';
 import { safeId, shade, skyColors } from './util';
 
 const X0 = -1800;
@@ -52,6 +53,8 @@ function Structure({ level, night }: { level: number; night: boolean }) {
       </defs>
       <g clipPath={`url(#room${uid})`}>
         <rect x={RX0} y={0} width={RW} height={WALL_BASE} fill={p.wall} />
+        <rect x={RX0} y={0} width={RW} height={WALL_BASE} fill="url(#pd-plaster)" />
+        <rect x={RX0} y={0} width={RW} height={WALL_BASE} fill="url(#pd-wallLight)" />
         {level === 0 && (
           <g opacity={0.5}>
             {Array.from({ length: 31 }, (_, i) => (
@@ -63,13 +66,27 @@ function Structure({ level, night }: { level: number; night: boolean }) {
         {level === 1 && <rect x={RX0} y={188} width={RW} height={4} fill={shade(p.wall2, -0.08)} />}
         {level === 2 && <rect x={RX0} y={236} width={RW} height={64} fill="#2f8f7a" opacity={0.18} />}
         <rect x={RX0} y={FLOOR_Y} width={RW} height={460 - FLOOR_Y} fill={p.floor} />
+        {level !== 3 && <rect x={RX0} y={FLOOR_Y} width={RW} height={460 - FLOOR_Y} fill="url(#pd-wood)" />}
         {lines}
         {rows.map((y) => (
-          <line key={y} x1={RX0} y1={y} x2={RX1} y2={y} stroke={p.floor2} strokeWidth={level === 3 ? 0.8 : 1.2} opacity={0.8} />
+          <g key={y}>
+            <line x1={RX0} y1={y} x2={RX1} y2={y} stroke={p.floor2} strokeWidth={level === 3 ? 0.8 : 1.2} opacity={0.8} />
+            <line x1={RX0} y1={y + 1.2} x2={RX1} y2={y + 1.2} stroke="#fff" strokeWidth={0.8} opacity={0.14} />
+          </g>
         ))}
+        <rect x={RX0} y={FLOOR_Y} width={RW} height={460 - FLOOR_Y} fill="url(#pd-floorSheen)" />
         {level === 3 && <rect x={RX0} y={FLOOR_Y} width={RW} height={60} fill="#ffffff" opacity={night ? 0.03 : 0.06} />}
+        {/* zócalo con moldura */}
         <rect x={RX0} y={WALL_BASE} width={RW} height={FLOOR_Y - WALL_BASE} fill={p.base} />
-        <rect x={RX0} y={FLOOR_Y} width={RW} height={6} fill="#000" opacity={0.1} />
+        <rect x={RX0} y={WALL_BASE} width={RW} height={2} fill="#fff" opacity={0.22} />
+        <rect x={RX0} y={WALL_BASE + 3} width={RW} height={1.2} fill="#000" opacity={0.18} />
+        <rect x={RX0} y={FLOOR_Y - 2} width={RW} height={2} fill="#000" opacity={0.22} />
+        {/* oclusión ambiental: unión pared-piso y rincones */}
+        <rect x={RX0} y={FLOOR_Y} width={RW} height={22} fill="url(#pd-aoDown)" />
+        <rect x={RX0} y={WALL_BASE - 26} width={RW} height={26} fill="url(#pd-aoUp)" opacity={0.6} />
+        <rect x={RX0} y={0} width={70} height={460} fill="url(#pd-aoLeft)" />
+        <rect x={RX1 - 70} y={0} width={70} height={460} fill="url(#pd-aoRight)" />
+        <rect x={RX0} y={14} width={RW} height={30} fill="url(#pd-aoDown)" opacity={0.5} />
       </g>
       {/* corte del edificio: losa y muros laterales */}
       <rect x={RX0 - 22} y={0} width={RW + 44} height={14} fill={p.slab} />
@@ -122,13 +139,17 @@ function Skyline({ x0, x1, base, hMin, hMax, night, seed, tint }: { x0: number; 
 function Tree({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx={0} cy={0} rx={30} ry={5} fill="#000" opacity={0.15} />
+      <Shadow x={0} y={0} rx={36} ry={6} />
       <rect x={-6} y={-90} width={12} height={90} rx={4} fill="#6e4a2c" />
+      <rect x={-6} y={-90} width={12} height={90} rx={4} fill="url(#pd-cloth)" />
       <g className="sway" style={{ transformOrigin: '0px -90px' }}>
         <circle cx={-26} cy={-110} r={30} fill="#3f8f4f" />
         <circle cx={22} cy={-116} r={34} fill="#4ea35e" />
         <circle cx={-2} cy={-148} r={34} fill="#58b068" />
         <circle cx={10} cy={-96} r={22} fill="#367d45" />
+        <circle cx={-26} cy={-110} r={30} fill="url(#pd-skinShade)" />
+        <circle cx={22} cy={-116} r={34} fill="url(#pd-skinShade)" />
+        <circle cx={-2} cy={-148} r={34} fill="url(#pd-skinShade)" />
       </g>
     </g>
   );
@@ -175,7 +196,7 @@ function Facade({ x, w, top, color, night, sign }: { x: number; w: number; top: 
   );
 }
 
-function Exterior({ level, hour }: { level: number; hour: number }) {
+function Exterior({ level, hour, rain }: { level: number; hour: number; rain: boolean }) {
   const sky = skyColors(hour);
   const uid = safeId(useId());
   const high = level === 3;
@@ -191,6 +212,7 @@ function Exterior({ level, hour }: { level: number; hour: number }) {
         </linearGradient>
       </defs>
       <rect x={X0} y={0} width={X1 - X0} height={460} fill={`url(#ext${uid})`} />
+      {rain && <rect x={X0} y={0} width={X1 - X0} height={460} fill="url(#pd-rainTint)" />}
       {sky.night && (
         <g fill="#fff8d6">
           {Array.from({ length: 40 }, (_, i) => (
@@ -199,14 +221,16 @@ function Exterior({ level, hour }: { level: number; hour: number }) {
         </g>
       )}
       {high ? (
-        <g>
+        <g filter="url(#pd-blur)">
           <Skyline x0={X0} x1={RX0 - 22} base={460} hMin={90} hMax={260} night={sky.night} seed={11} tint="#a9bccd" />
           <Skyline x0={R0} x1={X1} base={460} hMin={90} hMax={260} night={sky.night} seed={23} tint="#a9bccd" />
         </g>
       ) : (
         <g>
-          <Skyline x0={X0} x1={RX0 - 22} base={FLOOR_Y} hMin={40} hMax={130} night={sky.night} seed={5} tint="#c3d2df" />
-          <Skyline x0={R0} x1={X1} base={FLOOR_Y} hMin={40} hMax={130} night={sky.night} seed={17} tint="#c3d2df" />
+          <g filter="url(#pd-blur)">
+            <Skyline x0={X0} x1={RX0 - 22} base={FLOOR_Y} hMin={40} hMax={130} night={sky.night} seed={5} tint="#c3d2df" />
+            <Skyline x0={R0} x1={X1} base={FLOOR_Y} hMin={40} hMax={130} night={sky.night} seed={17} tint="#c3d2df" />
+          </g>
           <Facade x={-560} w={250} top={70} color="#b8674e" night={sky.night} sign="KIOSCO" />
           <Facade x={1500} w={260} top={50} color="#d7c49e" night={sky.night} sign="FARMACIA" />
           <Facade x={-1040} w={300} top={30} color="#8fa3b0" night={sky.night} />
@@ -235,17 +259,43 @@ function Exterior({ level, hour }: { level: number; hour: number }) {
 
 // ----------------------------------------------------------------------------- ventanas
 
-function Clouds({ w, h }: { w: number; h: number }) {
+function Clouds({ w, h, gray }: { w: number; h: number; gray?: boolean }) {
+  const fill = gray ? '#b9c2cb' : 'url(#pd-cloud)';
   return (
-    <g fill="#ffffff" opacity={0.9}>
+    <g fill={fill} opacity={0.92}>
       <g className="cloud c1" style={{ ['--cw' as string]: `${w + 120}px` }}>
         <ellipse cx={0} cy={h * 0.28} rx={22} ry={9} />
         <ellipse cx={14} cy={h * 0.24} rx={16} ry={10} />
         <ellipse cx={-14} cy={h * 0.3} rx={12} ry={7} />
+        <ellipse cx={0} cy={h * 0.31} rx={22} ry={5} fill={gray ? '#9aa3ad' : '#c3cfda'} opacity={0.6} />
       </g>
       <g className="cloud c2" style={{ ['--cw' as string]: `${w + 120}px` }}>
         <ellipse cx={0} cy={h * 0.5} rx={18} ry={7} />
         <ellipse cx={11} cy={h * 0.46} rx={12} ry={8} />
+        <ellipse cx={2} cy={h * 0.52} rx={17} ry={4} fill={gray ? '#9aa3ad' : '#c3cfda'} opacity={0.6} />
+      </g>
+    </g>
+  );
+}
+
+/** Gotas en el vidrio y lluvia detrás (CSS). */
+function Rain({ w, h }: { w: number; h: number }) {
+  const drops = Array.from({ length: 12 }, (_, i) => ({ x: (i * 37 + 9) % w, d: (i % 4) * 0.35, len: 10 + (i % 3) * 5 }));
+  const beads = Array.from({ length: 9 }, (_, i) => ({ x: (i * 53 + 20) % w, y: (i * 29 + 12) % h, r: 1.2 + (i % 3) * 0.5 }));
+  return (
+    <g className="rain" pointerEvents="none">
+      <g stroke="#dfe9f2" strokeWidth={1} strokeLinecap="round" opacity={0.55}>
+        {drops.map((d, i) => (
+          <line key={i} className="drop" x1={d.x} y1={-20} x2={d.x - 3} y2={-20 + d.len} style={{ animationDelay: `${-d.d}s`, ['--rh' as string]: `${h + 40}px` }} />
+        ))}
+      </g>
+      <g fill="#ffffff" opacity={0.5}>
+        {beads.map((b, i) => (
+          <g key={i} className="bead" style={{ animationDelay: `${-i * 0.9}s` }}>
+            <circle cx={b.x} cy={b.y} r={b.r} />
+            <line x1={b.x} y1={b.y} x2={b.x + 0.5} y2={b.y + 8} stroke="#ffffff" strokeWidth={0.8} opacity={0.5} />
+          </g>
+        ))}
       </g>
     </g>
   );
@@ -271,7 +321,7 @@ function Stars({ w, h }: { w: number; h: number }) {
   );
 }
 
-function CityBand({ w, h, night, seed }: { w: number; h: number; night: boolean; seed: number }) {
+function CityBand({ w, h, night, dusk, seed }: { w: number; h: number; night: boolean; dusk?: boolean; seed: number }) {
   const bs: { x: number; bw: number; bh: number }[] = [];
   let x = -4;
   let k = seed;
@@ -282,15 +332,16 @@ function CityBand({ w, h, night, seed }: { w: number; h: number; night: boolean;
     bs.push({ x, bw, bh });
     x += bw + 2;
   }
-  const c = night ? '#2a2f52' : '#9fb3c6';
+  const c = night ? '#2a2f52' : dusk ? '#5f6a8a' : '#9fb3c6';
   return (
-    <g>
+    <g filter="url(#pd-blur)">
       {bs.map((b, i) => (
         <g key={i}>
           <rect x={b.x} y={h - b.bh} width={b.bw} height={b.bh} fill={c} />
-          {night &&
+          <rect x={b.x} y={h - b.bh} width={b.bw * 0.4} height={b.bh} fill="#fff" opacity={night ? 0.03 : 0.1} />
+          {(night || dusk) &&
             Array.from({ length: Math.floor(b.bh / 10) }, (_, j) => (
-              <rect key={j} x={b.x + 4 + ((i + j) % 2) * 7} y={h - b.bh + 5 + j * 9} width={3.4} height={3.4} fill="#ffd77a" opacity={(i + j) % 3 === 0 ? 0.25 : 0.85} />
+              <rect key={j} x={b.x + 4 + ((i + j) % 2) * 7} y={h - b.bh + 5 + j * 9} width={3.4} height={3.4} fill="#ffd77a" opacity={(i + j) % 3 === 0 ? 0.25 : night ? 0.85 : 0.55} />
             ))}
         </g>
       ))}
@@ -298,11 +349,14 @@ function CityBand({ w, h, night, seed }: { w: number; h: number; night: boolean;
   );
 }
 
-function WindowPane({ r, hour, curtains, city, idx }: { r: Rect; hour: number; curtains?: boolean; city?: boolean; idx: number }) {
+function WindowPane({ r, hour, curtains, city, idx, rain }: { r: Rect; hour: number; curtains?: boolean; city?: boolean; idx: number; rain: boolean }) {
   const uid = safeId(useId());
   const sky = skyColors(hour);
+  const sunY = r.h * (0.18 + Math.max(0, hour - 13) * 0.09);
   return (
     <g transform={`translate(${r.x},${r.y})`}>
+      {/* sombra de la ventana sobre la pared (profundidad del marco) */}
+      <rect x={-7} y={-4} width={r.w + 18} height={r.h + 18} rx={4} fill="#000" opacity={0.1} />
       <defs>
         <linearGradient id={`sky${uid}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={sky.top} className="sky-stop" />
@@ -315,29 +369,44 @@ function WindowPane({ r, hour, curtains, city, idx }: { r: Rect; hour: number; c
       <rect x={-7} y={-7} width={r.w + 14} height={r.h + 14} rx={3} fill="#f7f3ea" />
       <g clipPath={`url(#clip${uid})`}>
         <rect x={0} y={0} width={r.w} height={r.h} fill={`url(#sky${uid})`} />
-        {sky.night ? <Stars w={r.w} h={r.h} /> : <Clouds w={r.w} h={r.h} />}
+        {rain && <rect x={0} y={0} width={r.w} height={r.h} fill="url(#pd-rainTint)" />}
+        {sky.night ? <Stars w={r.w} h={r.h} /> : <Clouds w={r.w} h={r.h} gray={rain} />}
         {sky.night ? (
           <g>
+            <circle cx={r.w * 0.78} cy={r.h * 0.22} r={30} fill="url(#pd-moonHalo)" />
             <circle cx={r.w * 0.78} cy={r.h * 0.22} r={10} fill="#fff4c9" />
             <circle cx={r.w * 0.78 + 4} cy={r.h * 0.22 - 3} r={9} fill={sky.top} />
           </g>
         ) : (
-          <circle cx={r.w * 0.8} cy={r.h * (0.18 + Math.max(0, hour - 13) * 0.09)} r={11} fill={hour >= 17 ? '#ffb46b' : '#fff1a8'} opacity={0.95} />
+          !rain && (
+            <g>
+              <circle cx={r.w * 0.8} cy={sunY} r={34} fill="url(#pd-sunHalo)" />
+              <circle cx={r.w * 0.8} cy={sunY} r={11} fill={hour >= 17 ? '#ffb46b' : '#fff1a8'} opacity={0.95} />
+            </g>
+          )
         )}
-        {city && <CityBand w={r.w} h={r.h} night={sky.night} seed={idx * 101 + 7} />}
-        <rect x={0} y={0} width={r.w} height={r.h} fill="url(#glass)" opacity={0.6} />
+        {city && <CityBand w={r.w} h={r.h} night={sky.night} dusk={sky.dusk} seed={idx * 101 + 7} />}
+        {rain && <Rain w={r.w} h={r.h} />}
+        <rect x={0} y={0} width={r.w} height={r.h} fill="url(#pd-glassRef)" />
       </g>
       <g fill="none" stroke="#f7f3ea" strokeWidth={5}>
         <line x1={r.w / 2} y1={0} x2={r.w / 2} y2={r.h} />
         <line x1={0} y1={r.h * 0.42} x2={r.w} y2={r.h * 0.42} />
       </g>
       <rect x={-7} y={-7} width={r.w + 14} height={r.h + 14} rx={3} fill="none" stroke={shade('#f7f3ea', -0.18)} strokeWidth={1.5} />
+      <rect x={0} y={0} width={r.w} height={r.h} fill="none" stroke="#000" strokeOpacity={0.18} strokeWidth={2} />
       <rect x={-12} y={r.h + 5} width={r.w + 24} height={7} rx={2} fill="#efe8d8" stroke="#cfc4ad" strokeWidth={1} />
+      <rect x={-12} y={r.h + 5} width={r.w + 24} height={7} rx={2} fill="url(#pd-top)" />
+      <rect x={-12} y={r.h + 12} width={r.w + 24} height={6} fill="url(#pd-aoDown)" opacity={0.8} />
       {curtains && (
         <g>
           <rect x={-22} y={-14} width={r.w + 44} height={5} rx={2} fill="#7a5233" />
           <path d={`M-20 -10 L14 -10 Q8 ${r.h * 0.5} 20 ${r.h + 6} L-20 ${r.h + 6} Z`} fill="#c0504d" />
+          <path d={`M-20 -10 L14 -10 Q8 ${r.h * 0.5} 20 ${r.h + 6} L-20 ${r.h + 6} Z`} fill="url(#pd-cloth)" />
           <path d={`M${r.w + 20} -10 L${r.w - 14} -10 Q${r.w - 8} ${r.h * 0.5} ${r.w - 20} ${r.h + 6} L${r.w + 20} ${r.h + 6} Z`} fill="#c0504d" />
+          <path d={`M${r.w + 20} -10 L${r.w - 14} -10 Q${r.w - 8} ${r.h * 0.5} ${r.w - 20} ${r.h + 6} L${r.w + 20} ${r.h + 6} Z`} fill="url(#pd-cloth)" />
+          <path d={`M-4 -8 Q-2 ${r.h * 0.5} 4 ${r.h + 4} M4 -8 Q7 ${r.h * 0.5} 12 ${r.h + 4}`} stroke="#000" strokeOpacity={0.12} strokeWidth={2} fill="none" />
+          <path d={`M${r.w + 4} -8 Q${r.w + 2} ${r.h * 0.5} ${r.w - 4} ${r.h + 4} M${r.w - 4} -8 Q${r.w - 7} ${r.h * 0.5} ${r.w - 12} ${r.h + 4}`} stroke="#000" strokeOpacity={0.12} strokeWidth={2} fill="none" />
           <path d={`M-12 -10 Q-6 ${r.h * 0.5} -12 ${r.h + 6}`} stroke="#a43f3d" strokeWidth={2} fill="none" />
           <path d={`M${r.w + 12} -10 Q${r.w + 6} ${r.h * 0.5} ${r.w + 12} ${r.h + 6}`} stroke="#a43f3d" strokeWidth={2} fill="none" />
         </g>
@@ -347,7 +416,7 @@ function WindowPane({ r, hour, curtains, city, idx }: { r: Rect; hour: number; c
 }
 
 /** Ventanal corporativo con skyline y río. */
-function Panorama({ r, hour }: { r: Rect; hour: number }) {
+function Panorama({ r, hour, rain }: { r: Rect; hour: number; rain: boolean }) {
   const uid = safeId(useId());
   const sky = skyColors(hour);
   const n = sky.night;
@@ -382,8 +451,21 @@ function Panorama({ r, hour }: { r: Rect; hour: number }) {
       </defs>
       <g clipPath={`url(#pclip${uid})`}>
         <rect x={0} y={0} width={r.w} height={r.h} fill={`url(#psky${uid})`} />
-        {n ? <Stars w={r.w} h={r.h * 0.5} /> : <Clouds w={r.w} h={r.h * 0.6} />}
-        {n ? <circle cx={r.w * 0.86} cy={46} r={14} fill="#fff4c9" /> : <circle cx={r.w * 0.86} cy={40 + Math.max(0, hour - 13) * 22} r={16} fill={hour >= 17 ? '#ffb46b' : '#fff1a8'} />}
+        {rain && <rect x={0} y={0} width={r.w} height={r.h} fill="url(#pd-rainTint)" />}
+        {n ? <Stars w={r.w} h={r.h * 0.5} /> : <Clouds w={r.w} h={r.h * 0.6} gray={rain} />}
+        {n ? (
+          <g>
+            <circle cx={r.w * 0.86} cy={46} r={44} fill="url(#pd-moonHalo)" />
+            <circle cx={r.w * 0.86} cy={46} r={14} fill="#fff4c9" />
+          </g>
+        ) : (
+          !rain && (
+            <g>
+              <circle cx={r.w * 0.86} cy={40 + Math.max(0, hour - 13) * 22} r={56} fill="url(#pd-sunHalo)" />
+              <circle cx={r.w * 0.86} cy={40 + Math.max(0, hour - 13) * 22} r={16} fill={hour >= 17 ? '#ffb46b' : '#fff1a8'} />
+            </g>
+          )
+        )}
         {/* skyline lejano */}
         {towers.map(([x, h, w], i) => (
           <g key={i}>
@@ -425,11 +507,17 @@ function Panorama({ r, hour }: { r: Rect; hour: number }) {
           <path d={`M0 ${riverY + 30} L26 ${riverY + 30} L22 ${riverY + 36} L4 ${riverY + 36} Z`} fill={n ? '#c7cbe0' : '#ffffff'} />
           <rect x={9} y={riverY + 24} width={8} height={6} fill={n ? '#ffd77a' : '#e05d4f'} />
         </g>
-        <rect x={0} y={0} width={r.w} height={r.h} fill="url(#glass)" opacity={0.5} />
+        {/* reflejo del río */}
+        <rect x={0} y={riverY} width={r.w} height={r.h - riverY} fill="url(#pd-floorReflect)" opacity={0.5} />
+        {rain && <Rain w={r.w} h={r.h} />}
+        <rect x={0} y={0} width={r.w} height={r.h} fill="url(#pd-glassRef)" opacity={0.8} />
       </g>
       {/* parantes */}
       {Array.from({ length: Math.floor(r.w / 100) + 1 }, (_, i) => (
-        <rect key={i} x={i * 100 - 3} y={0} width={6} height={r.h} fill="#2c3440" />
+        <g key={i}>
+          <rect x={i * 100 - 3} y={0} width={6} height={r.h} fill="#2c3440" />
+          <rect x={i * 100 - 3} y={0} width={6} height={r.h} fill="url(#pd-metal)" />
+        </g>
       ))}
       <rect x={-4} y={-4} width={r.w + 8} height={6} fill="#2c3440" />
       <rect x={0} y={r.h * 0.62} width={r.w} height={3} fill="#2c3440" opacity={0.6} />
@@ -511,6 +599,8 @@ function Diploma({ x, y }: { x: number; y: number }) {
       <line x1={14} y1={34} x2={44} y2={34} stroke="#b9a77f" strokeWidth={0.8} />
       <circle cx={54} cy={36} r={5} fill="#c8414f" />
       <circle cx={54} cy={36} r={2.4} fill="#e8b93a" />
+      <rect x={0} y={0} width={70} height={50} fill="url(#pd-wood)" />
+      <rect x={5} y={5} width={60} height={40} fill="url(#pd-glassRef)" />
     </g>
   );
 }
@@ -518,11 +608,14 @@ function Diploma({ x, y }: { x: number; y: number }) {
 function Picture({ x, y, w = 56, h = 42 }: { x: number; y: number; w?: number; h?: number }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <rect x={2} y={2} width={w} height={h} fill="#000" opacity={0.12} />
+      <rect x={3} y={4} width={w} height={h} fill="#000" opacity={0.16} />
       <rect x={0} y={0} width={w} height={h} fill="#2f3b47" />
+      <rect x={0} y={0} width={w} height={h} fill="url(#pd-metal)" opacity={0.6} />
       <rect x={4} y={4} width={w - 8} height={h - 8} fill="#bfe0ef" />
       <path d={`M4 ${h - 4} L${w * 0.35} ${h * 0.45} L${w * 0.55} ${h * 0.7} L${w * 0.72} ${h * 0.5} L${w - 4} ${h - 4} Z`} fill="#5e9a6e" />
+      <path d={`M4 ${h - 4} L${w * 0.35} ${h * 0.45} L${w * 0.55} ${h * 0.7} L${w * 0.72} ${h * 0.5} L${w - 4} ${h - 4} Z`} fill="url(#pd-cloth)" />
       <circle cx={w * 0.75} cy={h * 0.3} r={4} fill="#f5d36b" />
+      <rect x={4} y={4} width={w - 8} height={h - 8} fill="url(#pd-glassRef)" />
     </g>
   );
 }
@@ -530,7 +623,7 @@ function Picture({ x, y, w = 56, h = 42 }: { x: number; y: number; w?: number; h
 function Plant({ x, y, s = 1, big }: { x: number; y: number; s?: number; big?: boolean }) {
   return (
     <g transform={`translate(${x},${y}) scale(${s})`}>
-      <ellipse cx={0} cy={0} rx={18} ry={4} fill="#000" opacity={0.15} />
+      <Shadow x={0} y={0} rx={24} ry={5} />
       <g className="sway" style={{ transformOrigin: '0px -30px' }}>
         {big ? (
           <g fill="#3f8f4f">
@@ -539,17 +632,27 @@ function Plant({ x, y, s = 1, big }: { x: number; y: number; s?: number; big?: b
             <path d="M0 -30 C-8 -60 -2 -96 10 -110 C10 -80 6 -56 0 -30 Z" fill="#367d45" />
             <path d="M0 -30 C-34 -36 -50 -52 -50 -66 C-30 -60 -14 -46 0 -30 Z" fill="#4ea35e" />
             <path d="M0 -30 C30 -32 50 -46 52 -60 C32 -56 14 -44 0 -30 Z" fill="#367d45" />
+            {/* nervaduras y brillo */}
+            <g stroke="#1f5a2e" strokeWidth={0.9} fill="none" opacity={0.5}>
+              <path d="M0 -30 C-20 -60 -24 -78 -22 -96" />
+              <path d="M0 -30 C18 -56 26 -80 26 -100" />
+              <path d="M0 -30 C2 -60 6 -90 10 -110" />
+            </g>
+            <path d="M0 -30 C26 -46 42 -78 26 -100 C20 -74 8 -56 0 -30 Z" fill="#ffffff" opacity={0.08} />
           </g>
         ) : (
           <g fill="#4ea35e">
             <ellipse cx={-8} cy={-40} rx={7} ry={16} transform="rotate(-25 -8 -40)" />
             <ellipse cx={8} cy={-42} rx={7} ry={17} transform="rotate(22 8 -42)" fill="#3f8f4f" />
             <ellipse cx={0} cy={-50} rx={6} ry={18} fill="#58b068" />
+            <line x1={0} y1={-34} x2={0} y2={-66} stroke="#2f6e3c" strokeWidth={0.8} opacity={0.6} />
           </g>
         )}
       </g>
       <path d="M-14 -30 L14 -30 L11 0 L-11 0 Z" fill="#c4683f" />
+      <path d="M-14 -30 L14 -30 L11 0 L-11 0 Z" fill="url(#pd-cloth)" />
       <rect x={-15} y={-33} width={30} height={5} rx={1.5} fill="#d97d52" />
+      <rect x={-15} y={-33} width={30} height={5} rx={1.5} fill="url(#pd-top)" />
     </g>
   );
 }
@@ -557,8 +660,9 @@ function Plant({ x, y, s = 1, big }: { x: number; y: number; s?: number; big?: b
 function Dispenser({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx={0} cy={0} rx={16} ry={3.5} fill="#000" opacity={0.15} />
+      <Shadow x={0} y={0} rx={20} ry={4} />
       <rect x={-13} y={-64} width={26} height={64} rx={3} fill="#e9edf1" stroke="#c3cad2" strokeWidth={1} />
+      <rect x={-13} y={-64} width={26} height={64} rx={3} fill="url(#pd-metal)" opacity={0.5} />
       <rect x={-8} y={-52} width={6} height={4} rx={1} fill="#4a90d9" />
       <rect x={2} y={-52} width={6} height={4} rx={1} fill="#d9534a" />
       <path d="M-12 -64 L-14 -100 Q-14 -108 0 -108 Q14 -108 14 -100 L12 -64 Z" fill="#8fd0f5" opacity={0.75} />
@@ -573,8 +677,9 @@ function FileCabinet({ x, y, w = 50, h = 76 }: { x: number; y: number; w?: numbe
   const n = Math.round(h / 26);
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx={w / 2} cy={0} rx={w / 2 + 3} ry={3} fill="#000" opacity={0.13} />
+      <Shadow x={w / 2} y={0} rx={w / 2 + 6} ry={4} />
       <rect x={0} y={-h} width={w} height={h} rx={2} fill="#8f9aa6" />
+      <rect x={0} y={-h} width={w} height={h} rx={2} fill="url(#pd-metal)" />
       {Array.from({ length: n }, (_, i) => (
         <g key={i}>
           <rect x={3} y={-h + 3 + i * (h / n)} width={w - 6} height={h / n - 5} rx={1.5} fill="#a6b0bb" />
@@ -605,6 +710,8 @@ function Door({ r, open, kind, sign, onClick }: { r: Rect; open: boolean; kind: 
     <g className="clickable door" onClick={onClick}>
       <title>Puerta — ver bandeja y consultas</title>
       <rect x={x - 6} y={y - 6} width={w + 12} height={h + 6} fill={kind === 'elevator' ? '#8d969f' : '#e9e1cf'} />
+      <rect x={x - 6} y={y - 6} width={w + 12} height={h + 6} fill="url(#pd-top)" opacity={0.5} />
+      <rect x={x + 4} y={y - 2} width={w + 10} height={h + 4} fill="#000" opacity={0.12} />
       <rect x={x} y={y} width={w} height={h} fill="#2a2420" />
       {kind === 'elevator' ? (
         <g>
@@ -619,6 +726,8 @@ function Door({ r, open, kind, sign, onClick }: { r: Rect; open: boolean; kind: 
       ) : (
         <g className={open ? 'door-leaf open' : 'door-leaf'} style={{ transformOrigin: `${x}px ${y}px` }}>
           <rect x={x} y={y} width={w} height={h} fill={kind === 'home' ? '#8a5a35' : '#c9d9e4'} stroke={kind === 'home' ? '#6e4527' : '#7f939f'} strokeWidth={2} />
+          {kind === 'home' && <rect x={x} y={y} width={w} height={h} fill="url(#pd-wood)" />}
+          <rect x={x} y={y} width={w} height={h} fill={kind === 'home' ? 'url(#pd-cloth)' : 'url(#pd-glassRef)'} />
           {kind === 'home' ? (
             <g>
               <rect x={x + 10} y={y + 14} width={w - 20} height={h * 0.38} rx={2} fill="none" stroke="#6e4527" strokeWidth={2} />
@@ -646,12 +755,14 @@ function Door({ r, open, kind, sign, onClick }: { r: Rect; open: boolean; kind: 
 function ReceptionDesk({ x, y, w = 120, color = '#e7dccb', front = '#1d2b3a', logo }: { x: number; y: number; w?: number; color?: string; front?: string; logo?: string }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx={0} cy={0} rx={w / 2 + 6} ry={4} fill="#000" opacity={0.13} />
+      <Shadow x={0} y={0} rx={w / 2 + 10} ry={5} />
       {/* monitor de espaldas */}
       <rect x={-w / 2 + 14} y={-74} width={30} height={22} rx={2} fill="#2b3440" />
       <rect x={-w / 2 + 26} y={-54} width={6} height={8} fill="#3a434f" />
       <rect x={-w / 2} y={-52} width={w} height={8} rx={2} fill={color} />
       <rect x={-w / 2 + 4} y={-44} width={w - 8} height={44} fill={front} />
+      <rect x={-w / 2 + 4} y={-44} width={w - 8} height={44} fill="url(#pd-side)" />
+      <rect x={-w / 2} y={-52} width={w} height={8} rx={2} fill="url(#pd-top)" />
       <rect x={-w / 2 + 4} y={-44} width={w - 8} height={4} fill="#000" opacity={0.15} />
       {logo && (
         <text x={0} y={-17} textAnchor="middle" fontSize={9} fontWeight={900} fill="#e8b93a" fontFamily={SANS} letterSpacing={1}>
@@ -704,9 +815,33 @@ function PendantLamp({ x, on }: { x: number; on: boolean }) {
   return (
     <g transform={`translate(${x},14)`}>
       <line x1={0} y1={0} x2={0} y2={30} stroke="#3b3b3b" strokeWidth={1.4} />
-      {on && <ellipse cx={0} cy={60} rx={70} ry={50} fill="url(#lampGlow)" />}
+      {on && (
+        <g>
+          <ellipse cx={0} cy={70} rx={110} ry={80} fill="url(#pd-lamp)" />
+          <polygon points="-14,44 14,44 150,300 -150,300" fill="url(#pd-beam)" opacity={0.5} />
+        </g>
+      )}
       <path d="M-14 44 L-6 30 L6 30 L14 44 Z" fill={on ? '#ffd27a' : '#3d4a59'} />
+      <path d="M-14 44 L-6 30 L6 30 L14 44 Z" fill="url(#pd-metal)" opacity={0.6} />
       <ellipse cx={0} cy={44} rx={14} ry={3} fill={on ? '#fff3c4' : '#2b3440'} />
+      {on && <ellipse cx={0} cy={44} rx={7} ry={1.6} fill="#ffffff" />}
+    </g>
+  );
+}
+
+/** Charco de luz cálida sobre el piso bajo una lámpara encendida. */
+function LampPool({ x, y, rx = 120 }: { x: number; y: number; rx?: number }) {
+  return <ellipse cx={x} cy={y} rx={rx} ry={rx * 0.22} fill="url(#pd-lampPool)" />;
+}
+
+/** Polvo flotando en el haz de luz de la ventana. */
+function Dust({ r }: { r: Rect }) {
+  const pts = Array.from({ length: 11 }, (_, i) => ({ x: r.x + 10 + ((i * 61) % (r.w + 60)), y: FLOOR_Y - 10 - ((i * 37) % 130), d: (i % 5) * 1.3, s: 1.6 + (i % 3) * 0.5 }));
+  return (
+    <g fill="#fff8e1" pointerEvents="none">
+      {pts.map((p, i) => (
+        <circle key={i} className="dust" cx={p.x} cy={p.y} r={p.s} opacity={0.75} style={{ animationDelay: `${-p.d}s` }} />
+      ))}
     </g>
   );
 }
@@ -714,11 +849,18 @@ function PendantLamp({ x, on }: { x: number; on: boolean }) {
 function SofaCat({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      <ellipse cx={0} cy={2} rx={118} ry={6} fill="#000" opacity={0.14} />
+      <Shadow x={0} y={2} rx={128} ry={8} />
       <rect x={-110} y={-70} width={220} height={50} rx={16} fill="#4f6d7a" />
+      <rect x={-110} y={-70} width={220} height={50} rx={16} fill="url(#pd-fabric)" />
+      <rect x={-110} y={-70} width={220} height={50} rx={16} fill="url(#pd-cloth)" />
+      <path d="M-70 -62 Q-70 -30 -66 -24 M0 -62 Q0 -30 2 -24 M70 -62 Q70 -30 66 -24" stroke="#000" strokeOpacity={0.14} strokeWidth={2} fill="none" />
       <rect x={-118} y={-46} width={30} height={46} rx={10} fill="#46626e" />
+      <rect x={-118} y={-46} width={30} height={46} rx={10} fill="url(#pd-cloth)" />
       <rect x={88} y={-46} width={30} height={46} rx={10} fill="#46626e" />
+      <rect x={88} y={-46} width={30} height={46} rx={10} fill="url(#pd-cloth)" />
       <rect x={-90} y={-36} width={180} height={30} rx={8} fill="#5b7d8b" />
+      <rect x={-90} y={-36} width={180} height={30} rx={8} fill="url(#pd-fabric)" />
+      <rect x={-90} y={-36} width={180} height={30} rx={8} fill="url(#pd-top)" />
       <line x1={0} y1={-36} x2={0} y2={-8} stroke="#46626e" strokeWidth={2} />
       <rect x={-100} y={-6} width={8} height={6} fill="#3b2b20" />
       <rect x={92} y={-6} width={8} height={6} fill="#3b2b20" />
@@ -745,10 +887,12 @@ function SofaCat({ x, y }: { x: number; y: number }) {
 function FloorLamp({ x, y, on }: { x: number; y: number; on: boolean }) {
   return (
     <g transform={`translate(${x},${y})`}>
-      {on && <ellipse cx={0} cy={-120} rx={60} ry={50} fill="url(#lampGlow)" />}
+      {on && <ellipse cx={0} cy={-120} rx={90} ry={70} fill="url(#pd-lamp)" />}
+      <Shadow x={0} y={0} rx={18} ry={4} />
       <ellipse cx={0} cy={0} rx={14} ry={3} fill="#2b2b2b" />
       <rect x={-1.5} y={-130} width={3} height={130} fill="#3b3b3b" />
       <path d="M-18 -128 L-10 -152 L10 -152 L18 -128 Z" fill={on ? '#ffe2a0' : '#e9dcc0'} />
+      <path d="M-18 -128 L-10 -152 L10 -152 L18 -128 Z" fill="url(#pd-cloth)" opacity={0.7} />
     </g>
   );
 }
@@ -768,7 +912,8 @@ function MeetingRoom({ x0, x1, night }: { x0: number; x1: number; night: boolean
         <rect x={-30} y={-38} width={14} height={8} rx={1} fill="#ffffff" />
         <rect x={20} y={-36} width={10} height={6} rx={1} fill="#e8b93a" />
       </g>
-      <rect x={x0} y={20} width={w} height={BACK_BASE - 20} fill="url(#glass)" opacity={night ? 0.25 : 0.45} />
+      <rect x={x0} y={20} width={w} height={BACK_BASE - 20} fill="url(#pd-glassTint)" opacity={night ? 0.45 : 0.65} />
+      <line x1={x0 + w * 0.25} y1={20} x2={x0 + w * 0.6} y2={BACK_BASE} stroke="#ffffff" strokeWidth={6} opacity={0.14} />
       <g fill="#7f939f">
         <rect x={x0 - 3} y={20} width={5} height={BACK_BASE - 20} />
         <rect x={x1 - 2} y={20} width={5} height={BACK_BASE - 20} />
@@ -785,8 +930,9 @@ function MeetingRoom({ x0, x1, night }: { x0: number; x1: number; night: boolean
 function TechCabinet() {
   return (
     <g transform={`translate(1060,${BACK_BASE})`}>
-      <ellipse cx={40} cy={0} rx={44} ry={3.5} fill="#000" opacity={0.13} />
+      <Shadow x={40} y={0} rx={48} ry={4.5} />
       <rect x={0} y={-60} width={80} height={60} rx={2} fill="#b8bfc7" />
+      <rect x={0} y={-60} width={80} height={60} rx={2} fill="url(#pd-metal)" />
       <rect x={0} y={-60} width={80} height={5} fill="#d4dae0" />
       <rect x={4} y={-50} width={35} height={46} rx={1.5} fill="#a6aeb7" />
       <rect x={41} y={-50} width={35} height={46} rx={1.5} fill="#a6aeb7" />
@@ -826,6 +972,7 @@ export interface BackdropProps {
   doorOpen: boolean;
   estudio: string;
   arcaCaida: boolean;
+  rain: boolean;
   onDoorClick?: () => void;
   onCalendarClick?: () => void;
 }
@@ -849,25 +996,28 @@ export function Backdrop(p: BackdropProps) {
           <stop offset="1" stopColor="#ffe9a8" stopOpacity={0} />
         </radialGradient>
       </defs>
-      <Exterior level={level} hour={hour} />
+      <Exterior level={level} hour={hour} rain={p.rain} />
       <Structure level={level} night={sky.night} />
 
       {/* ventanas */}
       {level === 3 ? (
-        <Panorama r={L.windows[0]} hour={hour} />
+        <Panorama r={L.windows[0]} hour={hour} rain={p.rain} />
       ) : (
-        L.windows.map((w, i) => <WindowPane key={i} r={w} hour={hour} curtains={level === 0} city={level >= 1} idx={i} />)
+        L.windows.map((w, i) => <WindowPane key={i} r={w} hour={hour} curtains={level === 0} city={level >= 1} idx={i} rain={p.rain} />)
       )}
-      {/* haces de sol sobre el piso */}
-      {!sky.dusk && level < 3 &&
+      {/* luz de la ventana: haz sobre la pared y el piso, reflejo y polvo */}
+      {!sky.dusk &&
         L.windows.map((w, i) => (
-          <polygon
-            key={`beam${i}`}
-            points={`${w.x},${FLOOR_Y} ${w.x + w.w},${FLOOR_Y} ${w.x + w.w + 90},460 ${w.x + 70},460`}
-            fill="#fff6d8"
-            opacity={0.13}
-          />
+          <g key={`beam${i}`}>
+            <rect x={w.x - 40} y={w.y + w.h} width={w.w + 80} height={FLOOR_Y - w.y - w.h} fill="url(#pd-beamWall)" opacity={p.rain ? 0.3 : 0.8} />
+            <polygon points={`${w.x},${FLOOR_Y} ${w.x + w.w},${FLOOR_Y} ${w.x + w.w + 110},460 ${w.x + 60},460`} fill="url(#pd-beam)" opacity={p.rain ? 0.35 : 1} />
+            <polygon points={`${w.x + 10},${FLOOR_Y} ${w.x + w.w - 10},${FLOOR_Y} ${w.x + w.w + 20},${FLOOR_Y + 46} ${w.x + 4},${FLOOR_Y + 46}`} fill="url(#pd-floorReflect)" opacity={p.rain ? 0.3 : 0.7} />
+            {!p.rain && level < 3 && <Dust r={w} />}
+          </g>
         ))}
+      {sky.dusk && level < 3 && L.windows.map((w, i) => <polygon key={`nb${i}`} points={`${w.x + 10},${FLOOR_Y} ${w.x + w.w - 10},${FLOOR_Y} ${w.x + w.w + 20},${FLOOR_Y + 40} ${w.x + 4},${FLOOR_Y + 40}`} fill="url(#pd-floorReflect)" opacity={0.25} />)}
+      {lightsOn && L.lamps.map((x) => <LampPool key={`pool${x}`} x={x} y={FLOOR_Y + 70} />)}
+      {lightsOn && level === 3 && [340, 520, 700, 880].map((x) => <LampPool key={`pool${x}`} x={x} y={FLOOR_Y + 60} rx={140} />)}
 
       {/* decoración por nivel */}
       {level === 0 && (
@@ -886,8 +1036,10 @@ export function Backdrop(p: BackdropProps) {
           <ellipse cx={910} cy={350} rx={130} ry={11} fill="none" stroke="#f2dcbc" strokeWidth={2} strokeDasharray="6 5" opacity={0.6} />
           <FloorLamp x={784} y={BACK_BASE} on={lightsOn} />
           <g transform={`translate(1060,${BACK_BASE})`}>
-            <ellipse cx={60} cy={0} rx={66} ry={4} fill="#000" opacity={0.14} />
+            <Shadow x={60} y={0} rx={72} ry={5} />
             <rect x={0} y={-70} width={130} height={66} rx={3} fill="#9c6b40" />
+            <rect x={0} y={-70} width={130} height={66} rx={3} fill="url(#pd-wood)" />
+            <rect x={0} y={-70} width={130} height={66} rx={3} fill="url(#pd-side)" />
             <rect x={6} y={-62} width={56} height={52} rx={2} fill="#b07b4b" />
             <rect x={68} y={-62} width={56} height={52} rx={2} fill="#b07b4b" />
             <circle cx={56} cy={-36} r={2.4} fill="#6e4527" />
@@ -926,7 +1078,7 @@ export function Backdrop(p: BackdropProps) {
           {[340, 520, 700, 880].map((x) => (
             <g key={x}>
               <rect x={x - 50} y={14} width={100} height={5} fill={lightsOn ? '#fff4cf' : '#cfd6de'} />
-              {lightsOn && <ellipse cx={x} cy={60} rx={90} ry={50} fill="url(#lampGlow)" />}
+              {lightsOn && <ellipse cx={x} cy={60} rx={120} ry={70} fill="url(#pd-lamp)" />}
             </g>
           ))}
         </g>
@@ -961,9 +1113,22 @@ export function Backdrop(p: BackdropProps) {
 }
 
 /** Capa de luz ambiente (atardecer/noche). Se dibuja por encima de todo menos FX. */
-export function AmbientLight({ hour, vbX, vbW }: { hour: number; vbX: number; vbW: number }) {
-  if (hour < 17) return null;
-  const o = hour >= 19 ? 0.2 : hour >= 18 ? 0.12 : 0.06;
+export function AmbientLight({ hour, vbX, vbW, rain }: { hour: number; vbX: number; vbW: number; rain?: boolean }) {
+  const uid = safeId(useId());
+  if (hour < 17 && !rain) return null;
+  const o = hour >= 19 ? 0.26 : hour >= 18 ? 0.15 : hour >= 17 ? 0.07 : 0;
   const c = hour >= 19 ? '#141a45' : '#7a3a5a';
-  return <rect x={vbX - 10} y={0} width={vbW + 20} height={460} fill={c} opacity={o} pointerEvents="none" />;
+  return (
+    <g pointerEvents="none">
+      <defs>
+        <linearGradient id={`amb${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={c} stopOpacity={o * 1.3} />
+          <stop offset="0.5" stopColor={c} stopOpacity={o} />
+          <stop offset="1" stopColor={c} stopOpacity={o * 1.15} />
+        </linearGradient>
+      </defs>
+      {rain && <rect x={vbX - 10} y={0} width={vbW + 20} height={460} fill="#5c6b7a" opacity={0.1} />}
+      {o > 0 && <rect x={vbX - 10} y={0} width={vbW + 20} height={460} fill={`url(#amb${uid})`} />}
+    </g>
+  );
 }

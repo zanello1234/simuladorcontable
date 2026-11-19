@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import '../../styles.css';
 import type { Avatar, FxKind, GameState, Peinado, Task, ToolId, Worker, WorkerStatus } from '../../engine/types';
 import { OfficeScene } from '../OfficeScene';
-import { AvatarFace } from '../Avatar';
+import { AvatarFace, type Mood } from '../Avatar';
 import { OFICINAS } from '../../engine/config';
 
 const ALL_TOOLS: ToolId[] = ['planilla', 'sistema_contable', 'erp_nube', 'liquidador_sueldos', 'bot_arca', 'ia_carga', 'ia_revisor', 'ia_documentacion', 'ia_conciliacion', 'factura_auto', 'tablero_vencimientos', 'portal_clientes', 'backup_nube', 'ups', 'firma_digital', 'crm'];
@@ -56,7 +56,7 @@ function baseState(): GameState {
     steps: [], stepIndex: 0, estado: 'pendiente', errores: 0, corregidos: 0, saltearRevision: false, vencida: false,
   });
   return {
-    version: 1, rngState: 1, tick: 100, date: '2027-03-17', hour: num('hour', 11), speed: num('speed', 1) as 0 | 1 | 2 | 3,
+    version: 1, rngState: 1, tick: 100, date: q.get('date') || '2027-03-17', hour: num('hour', 11), speed: num('speed', 1) as 0 | 1 | 2 | 3,
     estudio: {
       nombre: q.get('nombre') || 'Estudio Zanello', titular: 'Martín Zanello', especialidad: 'impuestos', dificultad: 'normal', caja: 3_000_000, reputacion: 40, nivel: 2,
       oficina: lvl, marketing: 0, condicion: 'monotributista', diasEnRojo: 0, idle: 'networking', politicaRevision: 'siempre', autoAsignar: true, nroFactura: 1, inicio: '2027-01-04', faltasEticas: 0,
@@ -80,7 +80,17 @@ function baseState(): GameState {
 
 const FX_KINDS: FxKind[] = ['paso_completo', 'presentada', 'presentada_tarde', 'error_detectado', 'cobro', 'pago', 'multa', 'cliente_llega', 'prospecto_llega', 'inspector', 'arca_caida', 'contratacion', 'renuncia', 'nivel', 'herramienta', 'idea', 'error'];
 
+const MOODS: Mood[] = ['feliz', 'neutral', 'estres', 'triste', 'sorpresa', 'dormido'];
+function AvatarGrid() {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, padding: 12, background: '#fbf7ef', alignItems: 'center' }}>
+      {Array.from({ length: 6 }, (_, i) => [34, 56, 96].map((sz) => <AvatarFace key={`${i}-${sz}`} avatar={avatar(i)} size={sz} mood={MOODS[i]} />))}
+    </div>
+  );
+}
+
 function Preview() {
+  if (q.get('avatars') === '1') return <AvatarGrid />;
   const [s, setS] = useState<GameState>(baseState);
   const fire = (kind: FxKind) =>
     setS((p) => {

@@ -7,6 +7,7 @@
 - 🎮 **Modo simulador**: liquidá IVA, sueldos (CCT 130/75), recategorizaciones y conciliaciones bancarias a mano.
 - 🤖 **IA como herramienta**: acelera, pero sin revisión humana se cuelan errores.
 - 📈 **Crecimiento**: de la mesa del living al piso corporativo.
+- 🎵 **Música y efectos**: milonga de fondo que se acelera con los vencimientos y se pone tensa con una inspección; caja registradora al cobrar, trombón triste con las multas.
 
 ## Jugar
 

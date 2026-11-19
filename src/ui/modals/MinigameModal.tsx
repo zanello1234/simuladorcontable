@@ -1,3 +1,4 @@
+import { audio } from '../../audio/audio';
 import * as A from '../../engine/actions';
 import { hashSeed } from '../../engine/rng';
 import { MINIGAMES } from '../../minigames/registry';
@@ -24,6 +25,7 @@ export function MinigameModal() {
         indice={g.inflacion.indice}
         onCancel={() => close(undefined)}
         onComplete={(r) => {
+          audio.sfx(r.score >= 0.95 ? 'exito' : r.score >= 0.7 ? 'notificacion' : 'fallo');
           act((d) => A.completarMinijuego(d, t.id, r.score, mg.meta.horas), { silent: true });
           toast(r.score >= 0.95 ? `🎯 ${r.resumen}` : `📝 ${r.resumen}`, r.score >= 0.95 ? 'ok' : r.score >= 0.7 ? 'info' : 'warn');
           close(undefined);

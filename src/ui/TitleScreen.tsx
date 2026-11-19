@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { fechaAR } from '../engine/calendar';
 import { cloudMeta, type CloudMeta } from '../engine/cloud';
+import { AudioControls } from '../audio/AudioControls';
 import { DIFICULTAD } from '../engine/config';
 import { avatar as genAvatar } from '../engine/names';
 import { makeRng } from '../engine/rng';
@@ -153,6 +154,7 @@ export function TitleScreen() {
           </form>
         )}
       </div>
+      <AudioControls variant="floating" />
       <p className="title-foot tiny">Simulación con fines educativos y de entretenimiento. Valores de juego: no constituyen asesoramiento profesional.</p>
     </div>
   );

@@ -126,6 +126,7 @@ Cada uno da feedback educativo y un puntaje que define si la tarea queda con err
 - **Escena animada** (SVG + CSS): la oficina en corte. Personajes que tipean, toman mate, hablan por teléfono, se estresan (sudor, vapor) o se duermen sobre el escritorio; pilas de papeles según carga; reloj y ventana según la hora; calendario con vencimientos; clientes que entran con carpetas; inspector de ARCA en recepción; monitores en rojo cuando ARCA cae; objetos por cada herramienta (rack de servidores, robots de IA, impresora, TV de vencimientos); confetti al subir de nivel; monedas al cobrar.
 - **Paneles**: Escritorio, Tareas (calendario + lista), Clientes (prospectos, marketing, abonos, cartera), Equipo (políticas, fichas, candidatos, oficina), Herramientas, Finanzas (gráficos, cobranzas, movimientos), Bandeja (WhatsApp, mail, Domicilio Fiscal Electrónico).
 - Responsive: en celular la navegación pasa abajo y la escena se puede deslizar.
+- **Sonido** (Web Audio, generado en el momento, sin archivos): música de fondo en ritmo de milonga (bajo en tresillo 3-3-2, marcato de bandoneón sintetizado, melodía con variaciones) que cambia de clima según el estado del estudio: *menú*, *tranqui*, *apurado* (vencimientos encima o velocidad máxima) y *tensión* (inspección, ARCA caída, tareas vencidas, caja en rojo). En pausa se apaga a medias y baja durante las decisiones. Efectos para cada cosa que pasa: presentaciones (avioncito + campana), cobros (caja registradora), multas (trombón triste), timbre de clientes, inspector, ARCA caída, nivel, contratación, renuncia, herramientas, minijuegos y teléfono. Panel 🎵 con música y efectos por separado.
 
 ---
 
@@ -146,6 +147,7 @@ src/
   scene/         escena animada de la oficina
   minigames/     minijuegos (lógica pura + componente)
   ui/            pantallas, modales y componentes
+  audio/         música y efectos procedurales (Web Audio)
 tests/           simulación headless de 18 meses con 3 estrategias
 ```
 
@@ -158,8 +160,8 @@ tests/           simulación headless de 18 meses con 3 estrategias
 
 | Fase | Contenido |
 |---|---|
-| 0.1 (actual) | Motor completo, 10 obligaciones, 15 herramientas, ~20 eventos, 4 minijuegos, escena animada, guardado. |
-| 0.2 | Minijuegos de Ganancias PH, F.931 y coeficientes de Convenio Multilateral. Asientos contables. Sonido. Logros. |
+| 0.1 (actual) | Motor completo, 10 obligaciones, 15 herramientas, ~20 eventos, 4 minijuegos, escena animada, música y efectos, guardado. |
+| 0.2 | Minijuegos de Ganancias PH, F.931 y coeficientes de Convenio Multilateral. Asientos contables. Logros. |
 | 0.3 | Auditoría externa (RT 37): encargos, papeles de trabajo, informe. Clientes con sucursales. |
 | 0.4 | Asistente IA real dentro del juego (API de Claude) para consultas normativas, con validación del jugador. |
 | 0.5 | Modo capacitación (IADA): escenarios guiados de 90 minutos, métricas por alumno, ranking. |

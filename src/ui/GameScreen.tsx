@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useGameAudio } from '../audio/useGameAudio';
 import { MS_POR_HORA } from '../engine/config';
 import * as cloud from '../engine/cloud';
 import * as save from '../engine/save';
@@ -44,6 +45,7 @@ export function GameScreen() {
   const setSpeed = useGame((s) => s.setSpeed);
 
   const bloqueado = g.events.length > 0 || !!minigame || !!g.gameOver || showIntro;
+  useGameAudio(g, bloqueado);
 
   // bucle de juego
   useEffect(() => {

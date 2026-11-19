@@ -1307,3 +1307,72 @@
   animation: shake 0.35s ease;
   outline: 3px solid var(--bad-soft);
 }
+
+/* ---------------------------------------------------------------- sonido */
+.audio-ctl {
+  position: relative;
+}
+.audio-ctl.topbar .audio-btn {
+  color: #f3efe6;
+  font-size: 17px;
+}
+.audio-ctl.topbar .audio-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.audio-ctl.floating {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  z-index: 5;
+}
+.audio-ctl.floating .audio-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 20px;
+  min-height: 42px;
+  min-width: 42px;
+}
+.audio-pop {
+  padding: 12px;
+  gap: 10px;
+  min-width: 250px;
+}
+.audio-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.audio-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  min-width: 104px;
+  cursor: pointer;
+}
+.audio-check input {
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+}
+.audio-row input[type='range'] {
+  flex: 1;
+  accent-color: var(--accent);
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+.audio-pop .btn {
+  padding: 6px 10px;
+}
+@media (max-width: 720px) {
+  .audio-ctl.topbar {
+    order: 6;
+  }
+}
+.audio-pop .btn {
+  background: var(--panel-2);
+  border: 1.5px solid var(--line-2);
+  text-align: center;
+  justify-content: center;
+}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { AudioControls } from '../audio/AudioControls';
 import { fechaLarga, feriadoNombre } from '../engine/calendar';
 import { NIVELES } from '../engine/config';
 import { moneyShort, pct } from '../engine/format';
@@ -71,6 +72,7 @@ export function TopBar() {
         </div>
       </div>
 
+      <AudioControls />
       <div className="tb-menu">
         <button className="btn ghost sm" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Menú">
           ☰

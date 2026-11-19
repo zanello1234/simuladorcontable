@@ -1,6 +1,6 @@
 // Economía del estudio: facturación, cobranzas, gastos fijos, sueldos, inflación e impuestos propios.
 import { addBusinessDays, adjustToBusinessDay, day, firstBusinessDayOfMonth, lastDayOfMonth, month, monthKey, nthBusinessDay, year, ymd } from './calendar';
-import { CARGAS_SOCIALES, COSTOS_FIJOS, IMPUESTOS_ESTUDIO, MARKETING, MONOTRIBUTO_CATEGORIAS, OFICINAS } from './config';
+import { CARGAS_SOCIALES, COSTOS_FIJOS, DIFICULTAD, IMPUESTOS_ESTUDIO, MARKETING, MONOTRIBUTO_CATEGORIAS, OFICINAS } from './config';
 import { ajustarSatisfaccion, clientesActivos, cliente, fx, msg, mov, nid, precio } from './core';
 import type { Rng } from './rng';
 import { TOOL, hasEspecial } from './tools';
@@ -31,7 +31,7 @@ export function emitirFactura(s: GameState, rng: Rng, c: Client, monto: number, 
     pagaEl: undefined,
   };
   // facturar tarde demora el cobro
-  const atraso = day(s.date) > 10 ? 1.3 : 1;
+  const atraso = (day(s.date) > 10 ? 1.3 : 1) * DIFICULTAD[s.estudio.dificultad].pagos;
   inv.pagaEl = calcularPago(rng, c, s.date, atraso);
   s.invoices.push(inv);
   if (s.invoices.length > 1500) s.invoices.splice(0, s.invoices.length - 1500);

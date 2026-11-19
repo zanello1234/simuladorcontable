@@ -8,6 +8,7 @@
 //    si no se hace (o se hace mal), el crédito fiscal apócrifo queda en la DDJJ y es un error latente grave.
 import { addBusinessDays, businessDaysBetween } from './calendar';
 import { ajustarSatisfaccion, cliente, fx, msg, nid, player, quitarDeColas } from './core';
+import { DIFICULTAD } from './config';
 import { buildSteps } from './obligations';
 import type { Rng } from './rng';
 import type { Client, GameState, Task } from './types';
@@ -37,7 +38,7 @@ export function asignarObligatoriasDelMes(s: GameState, rng: Rng, nuevas: Task[]
       ya.add(t.id);
     }
   }
-  const cuantas = s.estudio.dificultad === 'argentina' ? 2 : 1;
+  const cuantas = DIFICULTAD[s.estudio.dificultad].obligatorias;
   const ivas = rng.shuffle(nuevas.filter((t) => t.kind === 'iva' && !ya.has(t.id) && !cliente(s, t.clientId)?.propio));
   const marcadas = ivas.slice(0, Math.min(cuantas, ivas.length));
   for (const t of marcadas) {

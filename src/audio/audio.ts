@@ -31,12 +31,13 @@ export type Sfx =
 export interface AudioPrefs {
   musica: boolean;
   efectos: boolean;
+  voces: boolean;
   volMusica: number; // 0..1
   volEfectos: number; // 0..1
 }
 
 const PREFS_KEY = 'partida-doble:audio';
-const DEFAULT_PREFS: AudioPrefs = { musica: true, efectos: true, volMusica: 0.45, volEfectos: 0.7 };
+const DEFAULT_PREFS: AudioPrefs = { musica: true, efectos: true, voces: true, volMusica: 0.45, volEfectos: 0.7 };
 
 const mtof = (m: number) => 440 * 2 ** ((m - 69) / 12);
 /** ganancia de mezcla de cada bus (el compresor del master contiene los picos) */

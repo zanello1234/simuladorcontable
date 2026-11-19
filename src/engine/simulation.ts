@@ -28,6 +28,7 @@ import {
   eventoMultas,
   eventoParitarias,
   eventoRenuncia,
+  eventoVacaciones,
   lanzarEvento,
   registrarIncorporarCartera,
   sortearEventoDiario,
@@ -275,6 +276,10 @@ function finalizarTarea(s: GameState, rng: Rng, t: Task, w: Worker): void {
     }
     if (t.kind === 'requerimiento') cerrarInspeccion(s, rng, t);
     if (t.kind === 'control') cerrarControl(s, rng, t, t.minigameScore ?? 0);
+    if (t.kind === 'auditoria') {
+      ajustarReputacion(s, t.errores > 0 ? -2 : tarde ? 1 : 4);
+      msg(s, { canal: 'email', de: corto(c.nombre), asunto: t.errores > 0 ? 'El banco observó el informe de auditoría' : '✅ Informe de auditoría entregado', cuerpo: t.errores > 0 ? 'El analista del banco encontró inconsistencias entre el informe y los estados contables. Mala imagen.' : 'El banco aprobó la línea de crédito con tu informe. ¡Gracias!', clientId: c.id });
+    }
   }
   fx(s, tarde ? 'presentada_tarde' : 'presentada', { workerId: w.id, clientId: t.clientId, texto: t.titulo });
 }
@@ -362,7 +367,7 @@ function cerrarDia(s: GameState, rng: Rng): void {
       vencerControl(s, rng, t);
       continue;
     }
-    const monto = precio(s, multaDe(t.kind, c));
+    const monto = Math.round(precio(s, multaDe(t.kind, c)) * DIFICULTAD[s.estudio.dificultad].multas);
     ajustarSatisfaccion(c, c.propio ? 0 : -12);
     ajustarReputacion(s, c.propio ? -0.3 : -0.8);
     if (monto > 0) multas.push({ c, t, monto });
@@ -448,6 +453,17 @@ function generarTareasDelDia(s: GameState, rng: Rng): void {
 
 function inicioDeDia(s: GameState, rng: Rng): void {
   generarTareasDelDia(s, rng);
+  const est = s.estudio as unknown as { vacaciones2?: string[] };
+  if (est.vacaciones2 && month(s.date) === 1 && Number(s.date.slice(8)) >= 16) {
+    for (const id of est.vacaciones2) {
+      const w = s.workers.find((x) => x.id === id);
+      if (w) {
+        w.ocupadoHoras += 80;
+        w.estres = 0;
+      }
+    }
+    est.vacaciones2 = undefined;
+  }
   const mult = DIFICULTAD[s.estudio.dificultad].eventos;
   const vencenPronto = s.tasks.some((t) => t.estado === 'pendiente' && t.vence <= addBusinessDays(s.date, 1) && t.steps[t.stepIndex]?.kind === 'presentacion');
   const vencenHoy = s.tasks.some((t) => t.estado === 'pendiente' && t.vence === s.date);
@@ -585,7 +601,7 @@ function inicioDeMes(s: GameState, rng: Rng, mesAnterior: string): void {
   const propio = estudioPropio(s);
   if (propio) propio.empleados = s.workers.filter((w) => w.id !== 'player').length;
   // tareas del mes
-  const docsFactor = (hasEspecial(s.tools, 'portal') ? 0.6 : 1) * (hasEspecial(s.tools, 'auto_reclamo') ? 0.8 : 1);
+  const docsFactor = (hasEspecial(s.tools, 'portal') ? 0.6 : 1) * (hasEspecial(s.tools, 'auto_reclamo') ? 0.8 : 1) * DIFICULTAD[s.estudio.dificultad].docs;
   let nuevas = 0;
   const generadas: Task[] = [];
   for (const c of s.clients.filter((x) => x.activo)) {
@@ -610,6 +626,7 @@ function inicioDeMes(s: GameState, rng: Rng, mesAnterior: string): void {
     leido: true,
   });
   s.candidates = generarCandidatos(rng, s.estudio.nivel, s.inflacion.indice, () => nid(s, 'w'));
+  if (month(s.date) === 1) eventoVacaciones(s);
   if ([1, 4, 7, 10].includes(month(s.date))) {
     const ult = s.inflacion.historia.slice(-3).reduce((a, h) => a * (1 + h.tasa), 1) - 1;
     eventoParitarias(s, Math.max(0.03, Math.round(ult * 100) / 100));
@@ -643,7 +660,7 @@ function inicioDeMes(s: GameState, rng: Rng, mesAnterior: string): void {
   // fiscalización
   if (!s.tasks.some((t) => t.kind === 'requerimiento' && t.estado === 'pendiente')) {
     for (const c of rng.shuffle(clientesActivos(s).slice())) {
-      const p = 0.004 + c.riesgoFiscal * 0.012 + c.erroresLatentes.length * 0.008;
+      const p = (0.004 + c.riesgoFiscal * 0.012 + c.erroresLatentes.length * 0.008) * DIFICULTAD[s.estudio.dificultad].fiscal;
       if (rng.chance(p)) {
         eventoInspeccion(s, c);
         break;
@@ -690,7 +707,9 @@ export function desbloqueos(nivel: number): string {
     2: 'Se desbloquean: oficina mediana, clientes de Convenio Multilateral, ERP en la nube, IA revisora, IA de conciliación, portal de clientes y CRM.',
     3: 'Se desbloquean: piso corporativo y clientes Sociedad Anónima. Ya sos un estudio de referencia en la ciudad.',
     4: 'Los clientes grandes te buscan. Más prospectos de cámaras empresarias.',
-    5: '¡Firma líder! Sos el estudio que todos quieren tener.',
+    5: '¡Firma líder! Sos el estudio que todos quieren tener. Se desbloquean los encargos de auditoría externa de grandes empresas.',
+    6: 'Firma regional: clientes de otras provincias (más Convenio Multilateral) y mejores candidatos.',
+    7: '¡Firma nacional! Llegaste a la cima. Ahora el desafío es sostenerla.',
   };
   return d[nivel] ?? '';
 }

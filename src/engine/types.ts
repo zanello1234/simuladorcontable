@@ -96,6 +96,7 @@ export type ObligationKind =
   | 'ganancias_soc'
   | 'requerimiento' // respuesta a fiscalización ARCA
   | 'control' // control de comprobantes (facturas apócrifas)
+  | 'auditoria' // encargo de auditoría externa de estados contables
   | 'rectificativa'
   | 'consulta'; // trabajo extra cobrable
 
@@ -406,7 +407,7 @@ export interface FxEvent {
 
 // ----------------------------------------------------------------------------- Estado general
 
-export type Dificultad = 'facil' | 'normal' | 'argentina';
+export type Dificultad = 'facil' | 'normal' | 'exigente' | 'argentina' | 'pesadilla';
 export type PlayerIdle = 'networking' | 'estudiar' | 'descansar';
 export type PoliticaRevision = 'siempre' | 'criticas' | 'nunca';
 

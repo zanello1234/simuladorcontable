@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { addBusinessDays } from '../engine/calendar';
 import type { FxKind, GameState } from '../engine/types';
 import { audio, type Mood, type Sfx } from './audio';
+import { hablar, type VozPersona } from './voice';
 
 const FX_SFX: Partial<Record<FxKind, Sfx>> = {
   paso_completo: 'blip',
@@ -77,12 +78,51 @@ export function useGameAudio(g: GameState, modalAbierto: boolean): void {
     }
   }, [g.fx]);
 
-  // eventos con decisión
+  // eventos con decisión (+ voz)
   const evId = g.events[0]?.id;
   const evDef = g.events[0]?.defId;
+  const evTitulo = g.events[0]?.titulo;
+  const evCliente = g.events[0]?.clientId;
   useEffect(() => {
     if (!evId || !evDef) return;
     const s = evDef in EVENTO_SFX ? EVENTO_SFX[evDef] : 'notificacion';
     if (s) audio.sfx(s);
+    const c = g.clients.find((x) => x.id === evCliente);
+    const vozCliente: VozPersona = c?.avatar.peinado === 'largo' || c?.avatar.peinado === 'rodete' ? 'cliente_f' : 'cliente_m';
+    const frase = fraseEvento(evDef, evTitulo ?? '', c?.nombre.split(' (')[0]);
+    if (frase) void hablar(frase.texto, frase.persona === 'cliente' ? vozCliente : frase.persona);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [evId, evDef]);
+}
+
+function fraseEvento(defId: string, titulo: string, cliente?: string): { texto: string; persona: VozPersona | 'cliente' } | null {
+  switch (defId) {
+    case 'inspeccion':
+      return { texto: `Buenos días. Vengo de ARCA. Traigo un requerimiento para ${cliente ?? 'su cliente'}. Tienen diez días hábiles.`, persona: 'inspector' };
+    case 'resultado_inspeccion':
+      return { texto: 'Concluida la verificación, se detectaron inconsistencias en las declaraciones juradas. Corresponde ajuste.', persona: 'inspector' };
+    case 'multa_quien_paga':
+    case 'multas_varias':
+      return { texto: '¿Cómo que hay una multa? ¡Vos tenías que avisarme!', persona: 'cliente' };
+    case 'consulta_cliente':
+      return { texto: `Hola, soy ${cliente ?? 'tu cliente'}. Te hago una consulta rápida, ¿tenés un minuto?`, persona: 'cliente' };
+    case 'dibujar':
+      return { texto: 'Dale, dibujame un poco los números. Nadie se va a dar cuenta.', persona: 'cliente' };
+    case 'cliente_moroso':
+      return { texto: 'Sí, sí, la semana que viene te transfiero, sin falta.', persona: 'cliente' };
+    case 'arca_caida':
+      return { texto: 'Atención: la página de ARCA no responde y hoy hay vencimientos.', persona: 'sistema' };
+    case 'nota_mes':
+      return { texto: titulo.replace('Cierre de', 'Cierre del mes.').replace(': nota', '. Nota'), persona: 'sistema' };
+    case 'renuncia':
+      return { texto: 'Me ofrecieron algo mejor. Lo pensé mucho, pero presento la renuncia.', persona: 'cliente' };
+    case 'pedido_aumento':
+      return { texto: 'Con esta inflación no llego a fin de mes. Necesito un aumento.', persona: 'cliente' };
+    case 'regalo':
+      return { texto: '¡Pasé a dejarles algo! Gracias por bancarme siempre.', persona: 'cliente' };
+    case 'caja_roja':
+      return { texto: 'Alerta: la caja del estudio está en rojo.', persona: 'sistema' };
+    default:
+      return null;
+  }
 }

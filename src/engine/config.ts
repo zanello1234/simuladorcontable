@@ -18,10 +18,30 @@ export const HORA_FIN_EXTRA = 20;
 /** milisegundos reales por hora de juego según velocidad */
 export const MS_POR_HORA: Record<1 | 2 | 3, number> = { 1: 1800, 2: 800, 3: 300 };
 
-export const DIFICULTAD: Record<Dificultad, { label: string; caja: number; inflacion: number; eventos: number; descripcion: string }> = {
-  facil: { label: 'Tranqui', caja: 6_000_000, inflacion: 0.015, eventos: 0.7, descripcion: 'Más caja inicial, inflación baja y menos sobresaltos.' },
-  normal: { label: 'Normal', caja: 3_000_000, inflacion: 0.022, eventos: 1, descripcion: 'La experiencia de un estudio PyME típico.' },
-  argentina: { label: 'Modo Argentina', caja: 1_500_000, inflacion: 0.06, eventos: 1.5, descripcion: 'Inflación alta, ARCA que se cae, clientes que pagan tarde. Suerte.' },
+export interface DificultadDef {
+  label: string;
+  caja: number;
+  inflacion: number;
+  /** multiplicador de frecuencia de eventos */
+  eventos: number;
+  /** multiplicador de demora documental de los clientes */
+  docs: number;
+  /** multiplicador de demora de pago */
+  pagos: number;
+  /** multiplicador de probabilidad de fiscalización */
+  fiscal: number;
+  /** DDJJ de IVA por mes que exigen al titular */
+  obligatorias: number;
+  /** multiplicador de multas */
+  multas: number;
+  descripcion: string;
+}
+export const DIFICULTAD: Record<Dificultad, DificultadDef> = {
+  facil: { label: 'Tranqui', caja: 6_000_000, inflacion: 0.015, eventos: 0.7, docs: 0.7, pagos: 0.7, fiscal: 0.6, obligatorias: 1, multas: 0.7, descripcion: 'Más caja inicial, inflación baja, clientes que pagan y pocos sobresaltos.' },
+  normal: { label: 'Normal', caja: 3_000_000, inflacion: 0.022, eventos: 1, docs: 1, pagos: 1, fiscal: 1, obligatorias: 1, multas: 1, descripcion: 'La experiencia de un estudio PyME típico.' },
+  exigente: { label: 'Exigente', caja: 2_200_000, inflacion: 0.035, eventos: 1.2, docs: 1.25, pagos: 1.25, fiscal: 1.4, obligatorias: 2, multas: 1.2, descripcion: 'Clientes desordenados, más fiscalizaciones y dos DDJJ por mes que tenés que hacer vos.' },
+  argentina: { label: 'Modo Argentina', caja: 1_500_000, inflacion: 0.06, eventos: 1.5, docs: 1.5, pagos: 1.6, fiscal: 1.8, obligatorias: 2, multas: 1.4, descripcion: 'Inflación alta, ARCA que se cae, clientes que pagan tarde. Suerte.' },
+  pesadilla: { label: 'Pesadilla', caja: 900_000, inflacion: 0.09, eventos: 2, docs: 1.9, pagos: 2, fiscal: 2.5, obligatorias: 3, multas: 1.8, descripcion: 'Hiperinflación, inspectores con olfato, prospectos que regatean y la mitad de la caja. Para contadores curtidos.' },
 };
 
 // ----------------------------------------------------------------------------- Oficinas y crecimiento
@@ -39,6 +59,8 @@ export const NIVELES = [
   { nivel: 3, nombre: 'Estudio consolidado', clientes: 14, reputacion: 50 },
   { nivel: 4, nombre: 'Estudio de referencia', clientes: 25, reputacion: 65 },
   { nivel: 5, nombre: 'Firma líder', clientes: 40, reputacion: 80 },
+  { nivel: 6, nombre: 'Firma regional', clientes: 60, reputacion: 88 },
+  { nivel: 7, nombre: 'Firma nacional', clientes: 90, reputacion: 95 },
 ] as const;
 
 export const MARKETING = [

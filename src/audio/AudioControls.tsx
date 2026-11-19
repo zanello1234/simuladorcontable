@@ -1,6 +1,7 @@
 // Botón de sonido con panel: música y efectos (on/off + volumen).
 import { useState, useSyncExternalStore } from 'react';
 import { audio } from './audio';
+import { callar, hablar, vocesDisponibles } from './voice';
 
 export function useAudioPrefs() {
   return useSyncExternalStore(
@@ -54,6 +55,24 @@ export function AudioControls({ variant = 'topbar' }: { variant?: 'topbar' | 'fl
               aria-label="Volumen de los efectos"
             />
           </div>
+          {vocesDisponibles() && (
+            <div className="audio-row">
+              <label className="audio-check">
+                <input
+                  id="aud-voces"
+                  type="checkbox"
+                  checked={p.voces}
+                  onChange={(e) => {
+                    audio.setPrefs({ voces: e.target.checked });
+                    if (e.target.checked) void hablar('Hola, acá tu estudio. ¡Vamos a trabajar!', 'sistema', { prioridad: true });
+                    else callar();
+                  }}
+                />
+                <span>🗣️ Voces</span>
+              </label>
+              <span className="tiny muted">Clientes, inspector y avisos hablados</span>
+            </div>
+          )}
           <p className="tiny muted">La música cambia con el clima del estudio: más rápida con vencimientos encima y tensa cuando cae una inspección.</p>
           <button className="btn sm block" onClick={() => setOpen(false)}>
             Listo

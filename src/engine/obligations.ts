@@ -241,6 +241,7 @@ export const OBLIGACION: Record<string, ObligationTemplate> = Object.fromEntries
 export const ESPECIALES: Partial<Record<ObligationKind, { nombre: string; area: Area; icon: string; critica: boolean; multa: (c: Client) => number }>> = {
   requerimiento: { nombre: 'Requerimiento ARCA', area: 'impuestos', icon: '🕵️', critica: true, multa: () => MULTA_REQUERIMIENTO },
   control: { nombre: 'Control de comprobantes', area: 'impuestos', icon: '🔎', critica: true, multa: () => 0 },
+  auditoria: { nombre: 'Auditoría externa', area: 'contabilidad', icon: '🧾', critica: true, multa: () => 0 },
   rectificativa: { nombre: 'DDJJ rectificativa', area: 'impuestos', icon: '🩹', critica: true, multa: () => 0 },
   consulta: { nombre: 'Trabajo especial', area: 'impuestos', icon: '💼', critica: false, multa: () => 0 },
 };

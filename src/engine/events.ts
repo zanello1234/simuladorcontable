@@ -607,6 +607,72 @@ const DEFS: EventDef[] = [
     resolver: () => 'Ahora facturás con IVA y tenés más obligaciones propias. ¡Es crecer!',
   },
   {
+    id: 'auditoria_oferta',
+    peso: (s) => (s.estudio.nivel >= 3 && clientesActivos(s).some((c) => c.kind === 'srl' || c.kind === 'sa' || c.kind === 'sas') && !s.tasks.some((t) => t.kind === 'auditoria' && t.estado === 'pendiente') ? 0.4 : 0),
+    crear: (s, rng) => {
+      const cs = clientesActivos(s).filter((c) => c.kind === 'srl' || c.kind === 'sa' || c.kind === 'sas');
+      if (!cs.length) return null;
+      const c = rng.pick(cs);
+      const hon = Math.round((c.honorario * (c.kind === 'sa' ? 4 : 3)) / 1000) * 1000;
+      const mejor = Math.max(...s.workers.map((w) => w.skills.contabilidad));
+      return nueva(s, {
+        defId: 'auditoria_oferta',
+        icon: '🧾',
+        titulo: 'Encargo de auditoría externa',
+        texto: `${c.nombre.split(' (')[0]} necesita un informe de auditoría sobre sus estados contables (el banco se lo exige para una línea de crédito). Honorario propuesto: ${money(hon)}. Es un encargo RT 37: planificación, pruebas, papeles de trabajo e informe. ${mejor < 60 ? 'Ojo: nadie en el estudio tiene habilidad contable 60 o más; el riesgo de un informe flojo es alto.' : ''}`,
+        clientId: c.id,
+        params: { clientId: c.id, hon },
+        opciones: [
+          { id: 'aceptar', label: `Aceptar el encargo (${money(hon)})`, hint: '30 días hábiles. Suma mucha reputación si sale bien.' },
+          { id: 'derivar', label: 'Derivarlo a un colega auditor', hint: 'Comisión del 10% por la derivación.' },
+          { id: 'no', label: 'No tomar auditorías' },
+        ],
+      });
+    },
+    resolver: (s, ev, op) => {
+      const c = cliente(s, String(P(ev, 'clientId')));
+      const hon = Number(P(ev, 'hon'));
+      if (!c) return '';
+      if (op === 'aceptar') {
+        const t = crearTareaEspecial(s, c, 'auditoria', `Auditoría EECC · ${c.nombre.split(' (')[0]}`, { recopilar: 3, carga: 10, liquidacion: 22, revision: 6, presentacion: 2 }, 30, { honorarioExtra: hon, docsRecibidos: false, docsLlegan: addBusinessDays(s.date, 3) });
+        asignar(s, t, mejorEn(s, 'contabilidad')?.id);
+        return 'Encargo aceptado. Asignado a quien más sabe de contabilidad.';
+      }
+      if (op === 'derivar') {
+        mov(s, hon * 0.1, 'honorarios', `Comisión por derivación de auditoría · ${c.nombre}`);
+        return `Cobraste ${money(hon * 0.1)} de comisión sin mover un papel.`;
+      }
+      ajustarSatisfaccion(c, -4);
+      return 'El cliente buscó otro auditor.';
+    },
+  },
+  {
+    id: 'vacaciones',
+    resolver: (s, _ev, op) => {
+      const equipo = s.workers.filter((w) => w.id !== 'player');
+      const dias = 10 * 8; // 14 días corridos ≈ 10 hábiles
+      if (op === 'escalonado') {
+        equipo.forEach((w, i) => {
+          w.ocupadoHoras += i % 2 === 0 ? dias : 0;
+          if (i % 2 === 1) w.renunciaEl = w.renunciaEl; // segunda tanda se maneja el 16/1
+          w.moral = Math.min(100, w.moral + 8);
+        });
+        (s.estudio as unknown as { vacaciones2?: string[] }).vacaciones2 = equipo.filter((_, i) => i % 2 === 1).map((w) => w.id);
+        return 'La mitad sale ahora y la otra mitad el 16. El estudio sigue abierto.';
+      }
+      if (op === 'todos') {
+        for (const w of equipo) {
+          w.ocupadoHoras += dias;
+          w.moral = Math.min(100, w.moral + 12);
+          w.estres = 0;
+        }
+        return 'Se van todos juntos. Quince días vos solo/a con los vencimientos de enero.';
+      }
+      for (const w of equipo) w.moral = Math.max(0, w.moral - 15);
+      return 'Vacaciones postergadas. La LCT dice que hay que otorgarlas entre octubre y abril: el equipo está molesto.';
+    },
+  },
+  {
     id: 'info',
     resolver: () => '',
   },
@@ -861,4 +927,23 @@ export function darDeBaja(s: GameState, c: Client, motivo: string): void {
 let incorporarCartera: (s: GameState, rng: Rng, n: number) => void = () => {};
 export function registrarIncorporarCartera(fn: typeof incorporarCartera) {
   incorporarCartera = fn;
+}
+
+export function eventoVacaciones(s: GameState): void {
+  if (!s.workers.some((w) => w.id !== 'player')) return;
+  lanzarEvento(
+    s,
+    nueva(s, {
+      defId: 'vacaciones',
+      icon: '🏖️',
+      titulo: 'Vacaciones de enero',
+      texto: 'El equipo tiene 14 días de vacaciones (LCT art. 150). Enero es tranquilo, pero los vencimientos de IVA, IIBB y sueldos no se toman licencia. ¿Cómo las organizás?',
+      params: {},
+      opciones: [
+        { id: 'escalonado', label: 'Escalonadas: mitad ahora, mitad el 16', hint: 'El estudio no para.' },
+        { id: 'todos', label: 'Todos juntos las dos primeras semanas', hint: 'Moral alta; vos solo/a con todo.' },
+        { id: 'postergar', label: 'Postergarlas', hint: 'Moral −15.' },
+      ],
+    }),
+  );
 }

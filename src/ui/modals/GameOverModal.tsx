@@ -1,5 +1,6 @@
 import { fechaLarga } from '../../engine/calendar';
 import { money } from '../../engine/format';
+import * as cloud from '../../engine/cloud';
 import * as save from '../../engine/save';
 import { useGame } from '../../store/game';
 import { Modal, Stat } from '../components';
@@ -26,6 +27,7 @@ export function GameOverModal() {
           className="btn primary mt"
           onClick={() => {
             save.borrar();
+            void cloud.cloudBorrar();
             salir();
           }}
         >

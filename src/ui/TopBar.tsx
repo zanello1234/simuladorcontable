@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { fechaLarga, feriadoNombre } from '../engine/calendar';
 import { NIVELES } from '../engine/config';
 import { moneyShort, pct } from '../engine/format';
+import * as cloud from '../engine/cloud';
 import * as save from '../engine/save';
 import { useGame } from '../store/game';
 
@@ -77,17 +78,19 @@ export function TopBar() {
         {menu && (
           <div className="menu-pop" onMouseLeave={() => setMenu(false)}>
             <button
-              onClick={() => {
-                toast(save.guardar(g) ? 'Partida guardada en este navegador.' : 'No se pudo guardar en este navegador: exportala.', 'info');
+              onClick={async () => {
                 setMenu(false);
+                const local = save.guardar(g);
+                const nube = await cloud.cloudGuardar(g);
+                toast(nube ? '☁️ Partida guardada en tu cuenta: seguila desde cualquier dispositivo.' : local ? 'Partida guardada en este navegador.' : 'No se pudo guardar: exportala a un archivo.', nube || local ? 'ok' : 'warn');
               }}
             >
               💾 Guardar
             </button>
             <button
-              onClick={() => {
-                save.exportar(g);
+              onClick={async () => {
                 setMenu(false);
+                toast(await save.exportar(g), 'info');
               }}
             >
               📤 Exportar partida (.json)

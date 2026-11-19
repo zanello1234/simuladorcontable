@@ -1,4 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { fechaAR } from '../engine/calendar';
+import { cloudMeta, type CloudMeta } from '../engine/cloud';
 import { DIFICULTAD } from '../engine/config';
 import { avatar as genAvatar } from '../engine/names';
 import { makeRng } from '../engine/rng';
@@ -23,7 +25,17 @@ export function TitleScreen() {
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1e9));
   const av: Avatar = genAvatar(makeRng(seed));
   const fileRef = useRef<HTMLInputElement>(null);
-  const hay = save.hayPartida();
+  const continuarNube = useGame((s) => s.continuarNube);
+  const [nube, setNube] = useState<CloudMeta | null>(null);
+  const [cargando, setCargando] = useState(false);
+  useEffect(() => {
+    let vivo = true;
+    void cloudMeta().then((m) => vivo && setNube(m));
+    return () => {
+      vivo = false;
+    };
+  }, []);
+  const hay = save.hayPartida() || !!nube;
 
   return (
     <div className="title">
@@ -45,9 +57,22 @@ export function TitleScreen() {
 
         {modo === 'menu' ? (
           <div className="col title-menu">
-            {hay && (
-              <button className="btn primary block" onClick={() => !continuar() && toast('No se pudo cargar la partida guardada.', 'warn')}>
-                ▶ Continuar partida
+            {nube && (
+              <button
+                className="btn primary block"
+                disabled={cargando}
+                onClick={async () => {
+                  setCargando(true);
+                  if (!(await continuarNube())) toast('No se pudo traer la partida de la nube.', 'warn');
+                  setCargando(false);
+                }}
+              >
+                {cargando ? 'Cargando…' : `☁️ Continuar: ${nube.estudio} (${fechaAR(nube.fecha)})`}
+              </button>
+            )}
+            {save.hayPartida() && (
+              <button className={`btn block ${nube ? '' : 'primary'}`} onClick={() => !continuar() && toast('No se pudo cargar la partida guardada.', 'warn')}>
+                ▶ Continuar partida {nube ? '(este dispositivo)' : ''}
               </button>
             )}
             <button className={`btn block ${hay ? '' : 'primary'}`} onClick={() => setModo('nueva')}>

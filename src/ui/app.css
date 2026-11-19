@@ -1303,3 +1303,7 @@
 .worker .small {
   overflow-wrap: anywhere;
 }
+.btn.armed {
+  animation: shake 0.35s ease;
+  outline: 3px solid var(--bad-soft);
+}

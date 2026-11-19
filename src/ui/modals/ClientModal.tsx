@@ -8,7 +8,7 @@ import { money, moneyShort, pct } from '../../engine/format';
 import { horasMensualesEstimadas, OBLIGACIONES } from '../../engine/obligations';
 import { AvatarFace } from '../../scene/Avatar';
 import { useGame } from '../../store/game';
-import { Bar, Cara, Modal, Stat } from '../components';
+import { Bar, Cara, ConfirmButton, Modal, Stat } from '../components';
 import { TaskRow } from '../TaskRow';
 
 export function ClientModal() {
@@ -81,17 +81,16 @@ export function ClientModal() {
         {!c.propio && c.activo && (
           <div className="row mt">
             <div className="spacer" />
-            <button
-              className="btn sm danger"
-              onClick={() => {
-                if (window.confirm(`¿Dar de baja a ${c.nombre}? Se pierden sus tareas pendientes.`)) {
-                  act((dd) => A.darDeBajaCliente(dd, c.id));
-                  close(undefined);
-                }
+            <ConfirmButton
+              title="Se pierden sus tareas pendientes"
+              confirmLabel="¿Dar de baja? Confirmar"
+              onConfirm={() => {
+                act((dd) => A.darDeBajaCliente(dd, c.id));
+                close(undefined);
               }}
             >
               Dar de baja
-            </button>
+            </ConfirmButton>
           </div>
         )}
         <p className="tiny muted mt">Abono de referencia de mercado: {money(ref)} (según tipo, empleados, volumen y jurisdicción).</p>

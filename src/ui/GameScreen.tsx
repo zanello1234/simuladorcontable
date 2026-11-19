@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { MS_POR_HORA } from '../engine/config';
+import * as cloud from '../engine/cloud';
 import * as save from '../engine/save';
 import { OfficeScene } from '../scene/OfficeScene';
 import { useGame, type Tab } from '../store/game';
@@ -51,9 +52,14 @@ export function GameScreen() {
     return () => window.clearInterval(id);
   }, [g.speed, bloqueado, tick]);
 
-  // autoguardado diario
+  // autoguardado: local cada día de juego; en la nube como mucho cada 45 s reales
+  const ultimaNube = useRef(Date.now());
   useEffect(() => {
     save.guardar(g);
+    if (Date.now() - ultimaNube.current > 45_000) {
+      ultimaNube.current = Date.now();
+      void cloud.cloudGuardar(g);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [g.date]);
 

@@ -1,5 +1,5 @@
 // Componentes de UI reutilizables.
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { businessDaysBetween } from '../engine/calendar';
 import { OFICINAS } from '../engine/config';
 import { costoMensualHerramientas, costoSueldos } from '../engine/economy';
@@ -162,5 +162,29 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
       <span className="toggle-ui" aria-hidden />
       <span>{label}</span>
     </label>
+  );
+}
+
+/** Botón con confirmación en dos toques (los diálogos nativos no funcionan en todos los visores). */
+export function ConfirmButton({ children, confirmLabel = '¿Seguro? Tocá de nuevo', onConfirm, className = 'btn sm danger', title }: { children: ReactNode; confirmLabel?: string; onConfirm: () => void; className?: string; title?: string }) {
+  const [armado, setArmado] = useState(false);
+  useEffect(() => {
+    if (!armado) return;
+    const id = setTimeout(() => setArmado(false), 4000);
+    return () => clearTimeout(id);
+  }, [armado]);
+  return (
+    <button
+      className={`${className} ${armado ? 'armed' : ''}`}
+      title={title}
+      onClick={() => {
+        if (armado) {
+          setArmado(false);
+          onConfirm();
+        } else setArmado(true);
+      }}
+    >
+      {armado ? confirmLabel : children}
+    </button>
   );
 }

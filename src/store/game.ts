@@ -3,6 +3,7 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 import type { Resultado } from '../engine/actions';
 import { newGame } from '../engine/newGame';
+import * as cloud from '../engine/cloud';
 import * as save from '../engine/save';
 import { tick as tickEngine } from '../engine/simulation';
 import type { GameState, NewGameConfig } from '../engine/types';
@@ -28,6 +29,8 @@ interface Store {
   // ciclo de vida
   start: (cfg: NewGameConfig) => void;
   continuar: () => boolean;
+  continuarNube: () => Promise<boolean>;
+  guardar: (opts?: { nube?: boolean }) => void;
   load: (g: GameState) => void;
   salir: () => void;
   // juego
@@ -57,7 +60,20 @@ export const useGame = create<Store>((set, get) => ({
   start: (cfg) => {
     const g = newGame(cfg);
     save.guardar(g);
+    void cloud.cloudGuardar(g);
     set({ game: g, tab: 'escritorio', showIntro: true, toasts: [] });
+  },
+  continuarNube: async () => {
+    const g = await cloud.cloudCargar();
+    if (!g) return false;
+    set({ game: g, tab: 'escritorio', showIntro: false });
+    return true;
+  },
+  guardar: (opts) => {
+    const g = get().game;
+    if (!g) return;
+    save.guardar(g);
+    if (opts?.nube !== false) void cloud.cloudGuardar(g);
   },
   continuar: () => {
     const g = save.cargar();
@@ -67,11 +83,15 @@ export const useGame = create<Store>((set, get) => ({
   },
   load: (g) => {
     save.guardar(g);
+    void cloud.cloudGuardar(g);
     set({ game: g, tab: 'escritorio', showIntro: false });
   },
   salir: () => {
     const g = get().game;
-    if (g) save.guardar({ ...g, speed: 0 });
+    if (g && !g.gameOver) {
+      save.guardar({ ...g, speed: 0 });
+      void cloud.cloudGuardar({ ...g, speed: 0 });
+    }
     set({ game: null, minigameTaskId: undefined, workerModalId: undefined, clientModalId: undefined });
   },
 

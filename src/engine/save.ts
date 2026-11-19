@@ -1,4 +1,5 @@
 // Guardado: autosave local (si el navegador lo permite) + exportar/importar archivo .json.
+import { claudeDescargar, enClaude } from './cloud';
 import { SAVE_VERSION } from './config';
 import type { GameState } from './types';
 
@@ -6,6 +7,8 @@ const KEY = 'partida-doble:save';
 
 /** Almacenamiento con fallback silencioso (modo privado, iframes, etc.). */
 function storage(): Storage | null {
+  // la versión publicada en claude.ai guarda en la nube (cloud.ts), no en el navegador
+  if (import.meta.env.MODE === 'single') return null;
   try {
     const s = window.localStorage;
     const k = '__pd_test__';
@@ -65,16 +68,24 @@ export function validar(obj: unknown): GameState | null {
   return s;
 }
 
-export function exportar(s: GameState): void {
-  const blob = new Blob([JSON.stringify({ ...s, fx: [] }, null, 0)], { type: 'application/json' });
+export async function exportar(s: GameState): Promise<string> {
+  const json = JSON.stringify({ ...s, fx: [] });
+  const nombre = `partida-doble-${s.estudio.nombre.replace(/[^\w-]+/g, '_')}-${s.date}.json`;
+  if (enClaude()) {
+    const r = await claudeDescargar(nombre, json);
+    if (r === 'ok') return 'Partida exportada.';
+    if (r === 'no') return 'No se exportó la partida.';
+  }
+  const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `partida-doble-${s.estudio.nombre.replace(/[^\w-]+/g, '_')}-${s.date}.json`;
+  a.download = nombre;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return 'Partida exportada.';
 }
 
 export async function importar(file: File): Promise<GameState | null> {

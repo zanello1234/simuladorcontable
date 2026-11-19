@@ -8,7 +8,7 @@ import type { Worker } from '../engine/types';
 import { AREAS } from '../engine/types';
 import { AvatarFace } from '../scene/Avatar';
 import { useGame } from '../store/game';
-import { Bar, capacidadDiaria, cargaDe, corto, Toggle } from './components';
+import { Bar, capacidadDiaria, cargaDe, ConfirmButton, corto, Toggle } from './components';
 
 const AREA_ICON = { impuestos: '🧾', sueldos: '💵', contabilidad: '📚' } as const;
 
@@ -93,14 +93,9 @@ export function WorkerCard({ w, full }: { w: Worker; full?: boolean }) {
             <button className="btn sm" onClick={() => act((d) => A.darAumento(d, w.id, 0.1))} title={`+10%: ${money(w.sueldo * 0.1)}`}>
               💸 +10%
             </button>
-            <button
-              className="btn sm danger"
-              onClick={() => {
-                if (window.confirm(`¿Desvincular a ${w.nombre}? Hay que pagar preaviso e indemnización.`)) act((d) => A.despedir(d, w.id));
-              }}
-            >
+            <ConfirmButton title="Hay que pagar preaviso e indemnización" confirmLabel="¿Despedir? Confirmar" onConfirm={() => act((d) => A.despedir(d, w.id))}>
               Despedir
-            </button>
+            </ConfirmButton>
           </>
         )}
       </footer>

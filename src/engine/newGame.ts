@@ -106,6 +106,8 @@ export function newGame(cfg: NewGameConfig): GameState {
     stats: { presentadasATiempo: 0, presentadasTarde: 0, multasPagadas: 0, inspeccionesSuperadas: 0, inspeccionesConAjuste: 0, clientesGanados: 0, clientesPerdidos: 0, minijuegosJugados: 0, mejorCaja: dif.caja },
     tutorial: [],
     progreso: { ...PROGRESO_INICIAL, misiones: [], logros: [], notas: [] },
+    horasCliente: {},
+    objetivos: [],
     idSeq: 100,
   };
 

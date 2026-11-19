@@ -42,6 +42,7 @@ const EVENTO_SFX: Record<string, Sfx | null> = {
   pedido_aumento: 'notificacion',
   renuncia: 'renuncia',
   nota_mes: 'notificacion',
+  reunion_lunes: 'notificacion',
 };
 
 export function climaDe(g: GameState): Mood {
@@ -122,6 +123,8 @@ function fraseEvento(defId: string, titulo: string, cliente?: string): { texto: 
       return { texto: '¡Pasé a dejarles algo! Gracias por bancarme siempre.', persona: 'cliente' };
     case 'caja_roja':
       return { texto: 'Alerta: la caja del estudio está en rojo.', persona: 'sistema' };
+    case 'reunion_lunes':
+      return { texto: 'Buen lunes. Repasemos la semana.', persona: 'titular' };
     default:
       return null;
   }

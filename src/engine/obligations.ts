@@ -181,13 +181,30 @@ export const OBLIGACIONES: ObligationTemplate[] = [
     descripcion: 'DDJJ anual de bienes al 31/12: valuación y mínimo no imponible.',
   },
   {
+    kind: 'registracion',
+    nombre: 'Registración contable',
+    organismo: 'Libros contables (CCyC art. 320)',
+    area: 'contabilidad',
+    icon: '📒',
+    critica: false,
+    minigame: 'asientos',
+    aplica: (c) => esSociedad(c) || (c.kind === 'ri_persona' && c.volumen >= 150),
+    genera: (_c, mes) => mesAnterior(mes),
+    // sin vencimiento legal mensual: el juego exige tener el mes registrado antes de fin del mes siguiente
+    vence: (_c, p) => diaDelMesSiguiente(p, 28),
+    horas: (c) => ({ recopilar: 0.3, carga: 1.2 * vol(c), liquidacion: 0.8 + 0.3 * vol(c), revision: 0.4, presentacion: 0.2 }),
+    demoraDocs: 12,
+    multa: () => 0,
+    descripcion: 'Asientos del mes en el Libro Diario: ventas, compras, cobros, pagos, sueldos y devengamientos.',
+  },
+  {
     kind: 'balance',
     nombre: 'Estados contables',
     organismo: 'Sociedad / Registro Público',
     area: 'contabilidad',
     icon: '📚',
     critica: true,
-    minigame: 'conciliacion',
+    minigame: 'cierre',
     aplica: esSociedad,
     genera: (c, mes) => {
       const cierre = c.cierre ?? 12;
@@ -202,7 +219,7 @@ export const OBLIGACIONES: ObligationTemplate[] = [
       const [y, m] = key.split('-').map(Number);
       return adjustToBusinessDay(ymd(y, m, lastDayOfMonth(y, m)));
     },
-    horas: (c) => ({ recopilar: 2, carga: 8 * vol(c), liquidacion: 8 + 2 * vol(c), revision: 3, presentacion: 1 }),
+    horas: (c) => ({ recopilar: 2, carga: 4 * vol(c), liquidacion: 8 + 2 * vol(c), revision: 3, presentacion: 1 }),
     demoraDocs: 30,
     multa: () => 0,
     descripcion: 'Cierre de ejercicio: conciliaciones, ajustes, EECC según RT 54 y memoria.',

@@ -92,6 +92,7 @@ export type ObligationKind =
   | 'recategorizacion'
   | 'ganancias_ph'
   | 'bienes_personales'
+  | 'registracion' // registración contable mensual (asientos)
   | 'balance'
   | 'ganancias_soc'
   | 'requerimiento' // respuesta a fiscalización ARCA
@@ -120,7 +121,7 @@ export interface TaskStep {
 
 export type TaskEstado = 'pendiente' | 'presentada' | 'presentada_tarde';
 
-export type MinigameId = 'iva' | 'sueldos' | 'recategorizacion' | 'conciliacion' | 'ganancias_ph' | 'apocrifas';
+export type MinigameId = 'iva' | 'sueldos' | 'recategorizacion' | 'conciliacion' | 'ganancias_ph' | 'apocrifas' | 'asientos' | 'cierre';
 
 export interface Task {
   id: string;
@@ -485,6 +486,14 @@ export interface DialogoEstado {
   resumen?: string;
 }
 
+export interface Objetivo {
+  id: string;
+  tipo: 'clientes' | 'facturacion' | 'caja' | 'reputacion' | 'nota' | 'racha';
+  meta: number;
+  creado: ISODate;
+  cumplidoEl?: ISODate;
+}
+
 export interface NotaMensual {
   mes: string;
   nota: 'A' | 'B' | 'C' | 'D' | 'F';
@@ -532,6 +541,10 @@ export interface GameState {
   progreso: Progreso;
   /** conversación con un cliente en curso (bloquea el reloj, como los eventos) */
   dialogo?: DialogoEstado;
+  /** horas reales trabajadas por cliente (acumulado histórico y del mes) */
+  horasCliente: Record<string, { total: number; mes: number }>;
+  /** objetivos que se fija el titular */
+  objetivos: Objetivo[];
   gameOver?: GameOver;
   idSeq: number;
 }

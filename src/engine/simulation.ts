@@ -1,6 +1,6 @@
 // Motor de simulación: avanza el reloj hora por hora, hace trabajar al equipo, procesa
 // vencimientos, cobranzas, gastos, eventos y el ciclo mensual.
-import { addBusinessDays, adjustToBusinessDay, businessDaysBetween, diffDays, month, monthKey, nextBusinessDay, year, ymd } from './calendar';
+import { addBusinessDays, adjustToBusinessDay, businessDaysBetween, diffDays, month, monthKey, nextBusinessDay, weekday, year, ymd } from './calendar';
 import { CARGAS_SOCIALES, DIFICULTAD, HORAS_MES, HORA_FIN, HORA_FIN_EXTRA, HORA_INICIO, MARKETING, MONOTRIBUTO_CATEGORIAS, NIVELES, RECARGO_HORA_EXTRA } from './config';
 import {
   ajustarReputacion,
@@ -29,6 +29,7 @@ import {
   eventoParitarias,
   eventoRenuncia,
   eventoVacaciones,
+  eventoReunionLunes,
   lanzarEvento,
   registrarIncorporarCartera,
   sortearEventoDiario,
@@ -173,6 +174,9 @@ function trabajar(s: GameState, rng: Rng, w: Worker, t: Task, extra: boolean): v
   w.statusText = `${PASO_CORTO[step.kind]} ${t.titulo} · ${corto(c?.nombre ?? '')}`;
   w.currentTaskId = t.id;
   w.horasMes += 1;
+  const hc = (s.horasCliente[t.clientId] ??= { total: 0, mes: 0 });
+  hc.total += 1;
+  hc.mes += 1;
   const carga = w.queue.reduce((a, id) => a + (tarea(s, id) ? horasRestantes(tarea(s, id)!) : 0), 0);
   w.estres = Math.min(100, w.estres + ((extra ? 2.4 : 0.35) + (carga > 40 ? 0.5 : 0)) * factorEstres(w, extra));
   if (extra) {
@@ -373,7 +377,9 @@ function cerrarDia(s: GameState, rng: Rng): void {
     ajustarSatisfaccion(c, c.propio ? 0 : -12);
     ajustarReputacion(s, c.propio ? -0.3 : -0.8);
     if (monto > 0) multas.push({ c, t, monto });
-    else if (t.kind === 'balance') {
+    else if (t.kind === 'registracion') {
+      c.erroresLatentes.push({ taskId: t.id, kind: 'balance', periodo: t.periodo, gravedad: 1, desde: s.date });
+    } else if (t.kind === 'balance') {
       ajustarSatisfaccion(c, -10);
       msg(s, { canal: 'email', de: corto(c.nombre), asunto: `Balance fuera de plazo`, cuerpo: 'El banco nos pide el balance para renovar la línea de crédito y todavía no está. ¿Qué pasó?', clientId: c.id, importante: true });
     }
@@ -534,6 +540,7 @@ function inicioDeDia(s: GameState, rng: Rng): void {
       }
     }
   }
+  if (weekday(s.date) === 1 && s.tasks.some((t) => t.estado === 'pendiente') && s.tick > 0) eventoReunionLunes(s);
   sortearEventoDiario(s, rng);
   // conversaciones con clientes: cuando no hay evento, de vez en cuando alguien pasa por el estudio
   if (!s.dialogo && !s.events.length && s.hour <= 9 && rng.chance(0.07 * DIFICULTAD[s.estudio.dificultad].eventos)) {
@@ -706,6 +713,18 @@ function inicioDeMes(s: GameState, rng: Rng, mesAnterior: string): void {
     w.horasMes = 0;
     w.horasExtraMes = 0;
   }
+  for (const k of Object.keys(s.horasCliente)) s.horasCliente[k].mes = 0;
+  // objetivos del titular
+  for (const o of s.objetivos) {
+    if (o.cumplidoEl) continue;
+    const v = valorObjetivo(s, o.tipo);
+    if (v >= o.meta) {
+      o.cumplidoEl = s.date;
+      ajustarReputacion(s, 1);
+      fx(s, 'mision', { texto: `🎯 Objetivo: ${o.tipo} ${o.meta}` });
+      msg(s, { canal: 'sistema', de: 'Objetivos', asunto: `🎯 Objetivo cumplido: ${o.tipo} ≥ ${o.meta}`, cuerpo: 'Te lo propusiste y lo lograste. +1 reputación.', leido: true });
+    }
+  }
   // limpieza
   const limite = addBusinessDays(s.date, -170);
   s.tasks = s.tasks.filter((t) => t.estado === 'pendiente' || (t.presentadaEl ?? '9999') >= limite);
@@ -783,3 +802,20 @@ export function aplicarMinijuego(s: GameState, rng: Rng, t: Task, score: number,
 }
 
 export { cargaHoras as cargaDe };
+
+export function valorObjetivo(s: GameState, tipo: import('./types').Objetivo['tipo']): number {
+  switch (tipo) {
+    case 'clientes':
+      return clientesActivos(s).length;
+    case 'facturacion':
+      return clientesActivos(s).reduce((a, c) => a + c.honorario, 0);
+    case 'caja':
+      return s.estudio.caja;
+    case 'reputacion':
+      return s.estudio.reputacion;
+    case 'nota':
+      return s.progreso.notas.length ? { A: 5, B: 4, C: 3, D: 2, F: 1 }[s.progreso.notas[s.progreso.notas.length - 1].nota] : 0;
+    case 'racha':
+      return s.progreso.mejorRacha;
+  }
+}

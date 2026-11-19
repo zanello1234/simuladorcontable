@@ -68,6 +68,8 @@ export function validar(obj: unknown): GameState | null {
   s.speed = 0;
   // partidas anteriores a la progresión
   if (!s.progreso) s.progreso = { ...PROGRESO_INICIAL, misiones: [], logros: [], notas: [] };
+  if (!s.horasCliente) s.horasCliente = {};
+  if (!s.objetivos) s.objetivos = [];
   return s;
 }
 

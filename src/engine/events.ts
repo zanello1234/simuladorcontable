@@ -673,6 +673,18 @@ const DEFS: EventDef[] = [
     },
   },
   {
+    id: 'reunion_lunes',
+    resolver: (s, _ev, op) => {
+      if (op === 'priorizar') {
+        // prioriza lo que vence esta semana
+        const fin = addBusinessDays(s.date, 4);
+        for (const t of s.tasks) if (t.estado === 'pendiente' && t.vence <= fin) t.prioridad = true;
+        return 'Semana ordenada: lo que vence primero va primero.';
+      }
+      return 'Arrancamos.';
+    },
+  },
+  {
     id: 'info',
     resolver: () => '',
   },
@@ -943,6 +955,44 @@ export function eventoVacaciones(s: GameState): void {
         { id: 'escalonado', label: 'Escalonadas: mitad ahora, mitad el 16', hint: 'El estudio no para.' },
         { id: 'todos', label: 'Todos juntos las dos primeras semanas', hint: 'Moral alta; vos solo/a con todo.' },
         { id: 'postergar', label: 'Postergarlas', hint: 'Moral −15.' },
+      ],
+    }),
+  );
+}
+
+/** Reunión de los lunes: resumen de la semana con la mirada del titular. */
+export function eventoReunionLunes(s: GameState): void {
+  const fin = addBusinessDays(s.date, 4);
+  const pend = s.tasks.filter((t) => t.estado === 'pendiente');
+  const semana = pend.filter((t) => t.vence <= fin);
+  const vencidas = pend.filter((t) => t.vence < s.date).length;
+  const titular = semana.filter((t) => t.requiereTitular && ['recopilar', 'carga', 'liquidacion'].includes(t.steps[t.stepIndex]?.kind ?? ''));
+  const horas = semana.reduce((a, t) => a + t.steps.slice(t.stepIndex).reduce((b, st) => b + (st.skipped ? 0 : Math.max(0, st.horasTotales - st.horasHechas)), 0), 0);
+  const capacidad = s.workers.reduce((a, w) => a + Math.max(0, 40 * w.velocidad - w.ocupadoHoras), 0);
+  const cobros = s.invoices.filter((i) => !i.cobradaEl && !i.incobrable && i.pagaEl && i.pagaEl >= s.date && i.pagaEl <= fin).reduce((a, i) => a + i.monto, 0);
+  const sinPapeles = semana.filter((t) => !t.docsRecibidos).length;
+  const porDia = new Map<string, number>();
+  for (const t of semana) porDia.set(t.vence, (porDia.get(t.vence) ?? 0) + 1);
+  const dias = [...porDia.entries()].sort().map(([d, n]) => `${d.slice(8)}/${d.slice(5, 7)}: ${n}`).join(' · ');
+  const lineas = [
+    `${semana.length} vencimientos esta semana (${dias || 'ninguno'}).${vencidas ? ` ${vencidas} ya vencidos sin presentar.` : ''}`,
+    `Trabajo pendiente: ${horas.toFixed(0)} h contra ${capacidad.toFixed(0)} h de capacidad del equipo${horas > capacidad ? ' ⚠️ no alcanza: priorizá, horas extra o delegá' : ' ✔'}.`,
+    sinPapeles ? `${sinPapeles} tarea/s todavía sin documentación: reclamá hoy.` : 'Documentación al día.',
+    titular.length ? `Te tocan a vos: ${titular.map((t) => t.titulo).join(', ')}.` : '',
+    `Cobros esperados: ${money(cobros)}. Caja: ${money(s.estudio.caja)}.`,
+    s.prospects.length ? `${s.prospects.length} prospecto/s esperan propuesta.` : '',
+  ].filter(Boolean);
+  lanzarEvento(
+    s,
+    nueva(s, {
+      defId: 'reunion_lunes',
+      icon: '☕',
+      titulo: 'Reunión de los lunes',
+      texto: lineas.join('\n'),
+      params: {},
+      opciones: [
+        { id: 'priorizar', label: 'Priorizar lo que vence esta semana' },
+        { id: 'ok', label: 'Arrancamos' },
       ],
     }),
   );

@@ -3,6 +3,7 @@ import { addBusinessDays, monthKey } from '../../engine/calendar';
 import { money, moneyShort } from '../../engine/format';
 import { porCobrar } from '../../engine/economy';
 import { player } from '../../engine/core';
+import { tareasQueDeboHacer } from '../../engine/titular';
 import type { PlayerIdle } from '../../engine/types';
 import { AvatarFace } from '../../scene/Avatar';
 import { useGame } from '../../store/game';
@@ -29,6 +30,8 @@ export function Escritorio() {
   const costos = costoMensual(g);
 
   const alertas: { tone: string; text: string; action?: { label: string; fn: () => void } }[] = [];
+  const debo = tareasQueDeboHacer(g);
+  if (debo.length) alertas.push({ tone: 'warn', text: `🎮 ${debo.length} tarea/s ${debo.length === 1 ? 'tiene' : 'tienen'} que hacerla vos (modo simulador): tu equipo no puede avanzarlas.`, action: { label: 'Ver', fn: () => setTab('tareas') } });
   if (facturar) alertas.push({ tone: 'warn', text: '🧾 Todavía no emitiste las facturas de este mes.', action: { label: 'Facturar ahora', fn: () => act((d) => A.facturarMes(d)) } });
   if (g.prospects.length) alertas.push({ tone: 'info', text: `🙋 ${g.prospects.length} prospecto/s esperan tu propuesta.`, action: { label: 'Ver', fn: () => setTab('clientes') } });
   if (g.flags.arcaCaida) alertas.push({ tone: 'bad', text: '🔥 ARCA está caída: hoy no se puede presentar.' });

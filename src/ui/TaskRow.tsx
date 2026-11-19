@@ -24,7 +24,9 @@ function TaskRowImpl({ g, t, compact, showClient = true }: Props) {
   const pendiente = t.estado === 'pendiente';
   const step = t.steps[t.stepIndex];
   const sem = pendiente ? semaforo(g, t) : t.estado === 'presentada' ? 'ok' : 'bad';
-  const mg = pendiente && t.minigame ? A.minijuegoDisponible(g, t.id) : null;
+  const mgDef = t.minigame ? MINIGAMES[t.minigame] : undefined;
+  const mg = pendiente && mgDef ? A.minijuegoDisponible(g, t.id) : null;
+  const debo = pendiente && t.requiereTitular && ['recopilar', 'carga', 'liquidacion'].includes(step?.kind ?? '');
   const h = horasRestantes(t);
 
   return (
@@ -39,9 +41,15 @@ function TaskRowImpl({ g, t, compact, showClient = true }: Props) {
             {iconDe(t.kind)}
           </span>
           <b>{t.titulo}</b>
-          {t.prioridad && <span title="Prioridad">⭐</span>}
+          {debo && (
+            <span className="chip warn" title={t.motivoTitular}>
+              🎮 La hacés vos
+            </span>
+          )}
+          {t.prioridad && !debo && <span title="Prioridad">⭐</span>}
           {t.honorarioExtra ? <span className="chip accent" title="Se factura aparte">+$</span> : null}
         </div>
+        {debo && t.motivoTitular && <span className="tiny motivo">{t.motivoTitular}</span>}
         {showClient && c && (
           <button className="linkish small muted" onClick={() => openClient(c.id)}>
             {corto(c.nombre)}
@@ -89,8 +97,8 @@ function TaskRowImpl({ g, t, compact, showClient = true }: Props) {
               📞 Reclamar
             </button>
           )}
-          {mg && t.minigame && (
-            <button className="btn sm primary" disabled={!mg.ok} title={mg.ok ? `${MINIGAMES[t.minigame].meta.titulo} (${MINIGAMES[t.minigame].meta.horas} h)` : mg.motivo} onClick={() => openMinigame(t.id)}>
+          {mg && mgDef && (
+            <button className={`btn sm primary ${debo && mg.ok ? 'pulse' : ''}`} disabled={!mg.ok} title={mg.ok ? `${mgDef.meta.titulo} (${mgDef.meta.horas} h)` : mg.motivo} onClick={() => openMinigame(t.id)}>
               🎮 Hacerla yo
             </button>
           )}

@@ -1440,3 +1440,11 @@
 .tb-stat.racha {
   background: rgba(240, 169, 42, 0.3);
 }
+.btn.pulse {
+  animation: pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 0 0 var(--accent-soft), 0 2px 0 var(--accent-2);
+}
+.task-main .motivo {
+  color: var(--warn);
+  font-weight: 700;
+}

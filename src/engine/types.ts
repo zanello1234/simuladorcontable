@@ -95,6 +95,7 @@ export type ObligationKind =
   | 'balance'
   | 'ganancias_soc'
   | 'requerimiento' // respuesta a fiscalización ARCA
+  | 'control' // control de comprobantes (facturas apócrifas)
   | 'rectificativa'
   | 'consulta'; // trabajo extra cobrable
 
@@ -118,7 +119,7 @@ export interface TaskStep {
 
 export type TaskEstado = 'pendiente' | 'presentada' | 'presentada_tarde';
 
-export type MinigameId = 'iva' | 'sueldos' | 'recategorizacion' | 'conciliacion';
+export type MinigameId = 'iva' | 'sueldos' | 'recategorizacion' | 'conciliacion' | 'ganancias_ph' | 'apocrifas';
 
 export interface Task {
   id: string;
@@ -150,6 +151,12 @@ export interface Task {
   minigame?: MinigameId;
   minigameScore?: number;
   prioridad?: boolean;
+  /** la carga/liquidación la tiene que hacer el titular con el minijuego (nadie más puede avanzarla) */
+  requiereTitular?: boolean;
+  /** motivo por el que la tiene que hacer el titular (se muestra) */
+  motivoTitular?: string;
+  /** id de la tarea de IVA asociada (para controles de comprobantes) */
+  vinculadaA?: string;
 }
 
 // ----------------------------------------------------------------------------- Equipo

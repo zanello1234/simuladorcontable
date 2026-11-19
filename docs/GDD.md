@@ -111,11 +111,29 @@ Fiscalización de ARCA (con requerimiento a contestar y posible ajuste), ARCA ca
 | 4 | Estudio de referencia | 25 clientes y reputación 65 | Más prospectos grandes |
 | 5 | Firma líder | 40 clientes y reputación 80 | — |
 
+### 3.8 bis Progresión fina: misiones, logros, rachas y nota mensual
+- **Misiones**: metas encadenadas de corto plazo (facturar, presentar 3 en término, hacer una liquidación a mano, contratar, mudarse, nota A, superar una fiscalización…) con premio en caja y reputación. Se muestran de a cuatro en el Escritorio.
+- **Logros**: 20 hitos permanentes, algunos secretos (ética, sobrevivir a la caja en rojo).
+- **Racha**: presentaciones en término consecutivas; bonus a los 5/10/25/50/100 y 🔥 en el HUD. Una presentación tarde la corta.
+- **Nota mensual** (A–F): puntualidad 40, resultado 25, satisfacción 15, multas 10, estrés del titular 10. Ajusta la reputación y se muestra como cierre de mes.
+- **Rasgos del equipo**: cada candidato puede traer un rasgo (mateador/a, perfeccionista, rápido/a, nocturno/a, zen, chusma, hincha, aprendiz, detallista, distraído/a) que modifica velocidad, errores, estrés, experiencia o moral del equipo.
+- **Relámpago "Despachar la pila"**: 45 segundos clasificando comprobantes (débito / crédito / no computa) con combos; una vez por día; cada acierto adelanta media hora de carga en las tareas más urgentes y baja el estrés.
+
+### 3.8 ter "Tenés que hacerla vos" y control de comprobantes
+- Algunas tareas **exigen al titular**: Ganancias de personas humanas siempre, y cada mes una o dos DDJJ de IVA marcadas (el cliente lo pide, hubo intimación, es su primera DDJJ). El equipo no puede avanzar la carga ni la liquidación: hay que jugar el minijuego antes del vencimiento o la tarea cae en falta.
+- **Control de comprobantes**: cuando un cliente trae facturas de un proveedor nuevo sospechoso (probabilidad según su riesgo fiscal y rubro), aparece una tarea previa al IVA que solo el titular puede hacer: el minijuego de detección de facturas apócrifas. Si no se hace o se hace mal, el crédito fiscal apócrifo queda en la DDJJ como error latente grave (fiscalización, ajuste, multa por omisión).
+
 ### 3.9 Minijuegos ("modo simulador")
 1. **Liquidación de IVA**: clasificar comprobantes (débito / crédito / no computa: Factura B y C, gastos no vinculados, notas de crédito), elegir los pagos a cuenta que corresponden y determinar el saldo.
 2. **Liquidación de sueldos (CCT 130/75)**: antigüedad, presentismo, horas extra, aportes (11 + 3 + 3 + sindicato) y neto.
 3. **Recategorización de Monotributo**: ingresos de 12 meses, superficie, energía, alquileres; categoría = la mayor de los parámetros; exclusión.
 4. **Conciliación bancaria**: emparejar extracto y mayor, clasificar partidas, saldo conciliado y asientos de ajuste.
+5. **DDJJ de Ganancias Personas Humanas**: rentas por categoría (con exentas y cedulares), deducciones generales con topes, cargas de familia, escala del art. 94, pagos a cuenta y anticipos. Vista previa del formulario.
+6. **Control de comprobantes (facturas apócrifas)**: CUIT con dígito verificador, base APOC, validación de CAE, CAE vencido, actividad incompatible, capacidad operativa, pagos en efectivo (Ley antievasión), duplicados y emisores dados de baja; con presupuesto de consultas, como en la vida real.
+7. **Relámpago**: ver 3.8 bis.
+
+### 3.10 Discusiones con el cliente
+Escenas de diálogo (estilo novela visual liviana) con ramas y consecuencias en satisfacción, reputación, caja, honorarios, riesgo fiscal y ética: "¿por qué pago tanto de IVA?", negociación de honorarios, discusión por una multa, "blanqueame al pibe la mitad", documentación que no llega, intimaciones, honorarios en negro, cliente que se quiere ir, consultas técnicas, facturas del proveedor nuevo, reclamo por un error del estudio y certificaciones "infladas".
 
 Cada uno da feedback educativo y un puntaje que define si la tarea queda con errores.
 

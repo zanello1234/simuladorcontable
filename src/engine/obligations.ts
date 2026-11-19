@@ -156,6 +156,7 @@ export const OBLIGACIONES: ObligationTemplate[] = [
     area: 'impuestos',
     icon: '📑',
     critica: true,
+    minigame: 'ganancias_ph',
     aplica: (c) => c.kind === 'ri_persona',
     genera: (_c, mes) => (mes.endsWith('-04') ? String(Number(mes.slice(0, 4)) - 1) : null),
     vence: (c, p) => adjustToBusinessDay(ymd(Number(p) + 1, 6, pick(c, [11, 11, 11, 12, 12, 12, 13, 13, 13, 13]))),
@@ -239,6 +240,7 @@ export const OBLIGACION: Record<string, ObligationTemplate> = Object.fromEntries
 /** Metadatos de tareas especiales (no periódicas) */
 export const ESPECIALES: Partial<Record<ObligationKind, { nombre: string; area: Area; icon: string; critica: boolean; multa: (c: Client) => number }>> = {
   requerimiento: { nombre: 'Requerimiento ARCA', area: 'impuestos', icon: '🕵️', critica: true, multa: () => MULTA_REQUERIMIENTO },
+  control: { nombre: 'Control de comprobantes', area: 'impuestos', icon: '🔎', critica: true, multa: () => 0 },
   rectificativa: { nombre: 'DDJJ rectificativa', area: 'impuestos', icon: '🩹', critica: true, multa: () => 0 },
   consulta: { nombre: 'Trabajo especial', area: 'impuestos', icon: '💼', critica: false, multa: () => 0 },
 };

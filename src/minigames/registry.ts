@@ -7,7 +7,7 @@ import { RecategorizacionMinigame, RECATEGORIZACION_META } from './recategorizac
 import { SueldosMinigame, SUELDOS_META } from './sueldos/SueldosMinigame';
 import type { MinigameMeta, MinigameProps } from './types';
 
-export const MINIGAMES: Record<MinigameId, { meta: MinigameMeta; Component: ComponentType<MinigameProps> }> = {
+export const MINIGAMES: Partial<Record<MinigameId, { meta: MinigameMeta; Component: ComponentType<MinigameProps> }>> = {
   iva: { meta: IVA_META, Component: IvaMinigame },
   recategorizacion: { meta: RECATEGORIZACION_META, Component: RecategorizacionMinigame },
   sueldos: { meta: SUELDOS_META, Component: SueldosMinigame },

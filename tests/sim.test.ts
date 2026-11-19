@@ -18,6 +18,8 @@ function piloto(s: GameState, opts: { contratar: boolean; ia: boolean }): GameSt
       A.elegirOpcion(d, ev.id, op.id);
     }
     if (d.estudio.facturasEmitidasMes !== monthKey(d.date)) A.facturarMes(d);
+    // el piloto "juega" las tareas que exigen al titular (con un puntaje de jugador decente)
+    for (const t of d.tasks) if (t.estado === 'pendiente' && t.requiereTitular && A.minijuegoDisponible(d, t.id).ok) A.completarMinijuego(d, t.id, 0.9, 2);
     for (const p of [...d.prospects]) A.enviarPropuesta(d, p.id, p.honorarioReferencia);
     if (opts.contratar) {
       const carga = d.tasks.filter((t) => t.estado === 'pendiente').length;

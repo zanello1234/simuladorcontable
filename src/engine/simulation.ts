@@ -39,6 +39,7 @@ import { makeRng, type Rng } from './rng';
 import { eficiencia, factorEstres, factorXp, generarCandidatos, probDeteccion, probError } from './staff';
 import { calcularNota, evaluarProgresion, NOTA_TEXTO, registrarPresentacion } from './progression';
 import { RASGOS } from './traits';
+import { asignarObligatoriasDelMes, bloqueoTitular, cerrarControl, vencerControl } from './titular';
 import { generarProspecto as genProspectoChusma } from './clients';
 import { hasEspecial, toolMods } from './tools';
 import type { GameState, Task, Worker } from './types';
@@ -110,6 +111,8 @@ function bloqueo(s: GameState, t: Task): string | null {
   const step = t.steps[t.stepIndex];
   if (!step) return 'sin pasos';
   if (step.kind === 'recopilar' && !t.docsRecibidos) return `Esperando papeles de ${corto(cliente(s, t.clientId)?.nombre ?? '')}`;
+  const bt = bloqueoTitular(t, t.asignadoA ?? '');
+  if (bt) return bt;
   if (step.kind === 'presentacion' && s.flags.arcaCaida) return 'ARCA no responde 😤';
   return null;
 }
@@ -118,7 +121,7 @@ export function elegirTarea(s: GameState, w: Worker): Task | undefined {
   for (const id of w.queue) {
     const t = tarea(s, id);
     if (!t || t.estado !== 'pendiente') continue;
-    if (!bloqueo(s, t)) return t;
+    if (!bloqueo(s, t) && !bloqueoTitular(t, w.id)) return t;
   }
   return undefined;
 }
@@ -127,7 +130,7 @@ function ocioso(s: GameState, w: Worker): void {
   const bloqueada = w.queue.map((id) => tarea(s, id)).find((t) => t && t.estado === 'pendiente');
   if (bloqueada) {
     w.status = 'esperando';
-    w.statusText = bloqueo(s, bloqueada) ?? 'Esperando';
+    w.statusText = bloqueoTitular(bloqueada, w.id) ?? bloqueo(s, bloqueada) ?? 'Esperando';
     w.estres = Math.max(0, w.estres - 0.5);
     return;
   }
@@ -271,6 +274,7 @@ function finalizarTarea(s: GameState, rng: Rng, t: Task, w: Worker): void {
       emitirFactura(s, rng, c, t.honorarioExtra, `Honorarios: ${t.titulo}`, t.periodo);
     }
     if (t.kind === 'requerimiento') cerrarInspeccion(s, rng, t);
+    if (t.kind === 'control') cerrarControl(s, rng, t, t.minigameScore ?? 0);
   }
   fx(s, tarde ? 'presentada_tarde' : 'presentada', { workerId: w.id, clientId: t.clientId, texto: t.titulo });
 }
@@ -307,6 +311,15 @@ export function asignacionAutomatica(s: GameState): void {
       const area = areaDe(t.kind);
       let best: Worker | undefined;
       let bestScore = Infinity;
+      if (t.requiereTitular) {
+        const p = disponibles.find((w) => w.id === 'player');
+        if (p) {
+          p.queue.push(t.id);
+          t.asignadoA = 'player';
+          carga.set('player', (carga.get('player') ?? 0) + horasRestantes(t));
+        }
+        continue;
+      }
       for (const w of disponibles) {
         const cap = 8 * w.velocidad;
         const score = (carga.get(w.id) ?? 0) / cap + (100 - w.skills[area]) / 30 + (w.id === 'player' ? 0.6 : 0);
@@ -345,6 +358,10 @@ function cerrarDia(s: GameState, rng: Rng): void {
     t.vencida = true;
     const c = cliente(s, t.clientId);
     if (!c) continue;
+    if (t.kind === 'control') {
+      vencerControl(s, rng, t);
+      continue;
+    }
     const monto = precio(s, multaDe(t.kind, c));
     ajustarSatisfaccion(c, c.propio ? 0 : -12);
     ajustarReputacion(s, c.propio ? -0.3 : -0.8);
@@ -462,6 +479,7 @@ function inicioDeDia(s: GameState, rng: Rng): void {
   }
   // documentación que llega
   const llegadas = s.tasks.filter((t) => t.estado === 'pendiente' && !t.docsRecibidos && t.docsLlegan <= s.date);
+  for (const t of llegadas) if (t.kind === 'control' && t.steps[t.stepIndex]?.kind === 'recopilar') t.stepIndex += 1;
   const porCliente = new Map<string, Task[]>();
   for (const t of llegadas) {
     t.docsRecibidos = true;
@@ -569,11 +587,14 @@ function inicioDeMes(s: GameState, rng: Rng, mesAnterior: string): void {
   // tareas del mes
   const docsFactor = (hasEspecial(s.tools, 'portal') ? 0.6 : 1) * (hasEspecial(s.tools, 'auto_reclamo') ? 0.8 : 1);
   let nuevas = 0;
+  const generadas: Task[] = [];
   for (const c of s.clients.filter((x) => x.activo)) {
     const ts = generarTareasDelMes(rng, c, mes, s.date, () => nid(s, 't'), docsFactor);
     s.tasks.push(...ts);
+    generadas.push(...ts);
     nuevas += ts.length;
   }
+  asignarObligatoriasDelMes(s, rng, generadas);
   // facturación
   if (hasEspecial(s.tools, 'factura_auto')) {
     const r = emitirAbonos(s, rng);

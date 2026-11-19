@@ -7,6 +7,7 @@ import { avatar as genAvatar } from './names';
 import { generarTareasDelMes } from './obligations';
 import { makeRng } from './rng';
 import { asignacionAutomatica } from './simulation';
+import { asignarObligatoriasDelMes } from './titular';
 import { PROGRESO_INICIAL } from './progression';
 import { generarCandidatos, titular } from './staff';
 import type { Client, GameState, Message, NewGameConfig } from './types';
@@ -114,6 +115,7 @@ export function newGame(cfg: NewGameConfig): GameState {
   };
   const mes = monthKey(hoy);
   for (const c of s.clients) s.tasks.push(...generarTareasDelMes(rng, c, mes, hoy, nuevoId));
+  asignarObligatoriasDelMes(s, rng, s.tasks);
   // lo que vence en la primera semana ya tiene los papeles (no es justo empezar con un incendio imposible)
   const limite = addBusinessDays(hoy, 4);
   for (const t of s.tasks) {

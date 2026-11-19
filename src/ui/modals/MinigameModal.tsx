@@ -13,8 +13,8 @@ export function MinigameModal() {
   const toast = useGame((s) => s.toast);
   const t = g.tasks.find((x) => x.id === id);
   const c = t ? g.clients.find((x) => x.id === t.clientId) : undefined;
-  if (!t || !c || !t.minigame) return null;
-  const mg = MINIGAMES[t.minigame];
+  const mg = t?.minigame ? MINIGAMES[t.minigame] : undefined;
+  if (!t || !c || !mg) return null;
   const { Component } = mg;
   return (
     <Modal full label={mg.meta.titulo}>

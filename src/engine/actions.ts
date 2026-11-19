@@ -9,7 +9,7 @@ import { money } from './format';
 import { makeRng, type Rng } from './rng';
 import { aplicarMinijuego, asignacionAutomatica, incorporarCliente, ordenarCola, prepararSiguientePaso, retirarWorker } from './simulation';
 import { nuevoWorker } from './staff';
-import { TOOL, hasTool } from './tools';
+import { TOOL, hasEspecial, hasTool } from './tools';
 import type { GameState, PlayerIdle, PoliticaRevision, ToolId } from './types';
 
 export interface Resultado {
@@ -112,6 +112,7 @@ export function minijuegoDisponible(s: GameState, taskId: string): { ok: boolean
   if (!step) return { ok: false };
   if (!t.docsRecibidos) return { ok: false, motivo: 'Falta la documentación del cliente' };
   if (!['recopilar', 'carga', 'liquidacion'].includes(step.kind)) return { ok: false, motivo: 'La liquidación ya está hecha' };
+  if (s.flags.corteLuz && !hasEspecial(s.tools, 'ups')) return { ok: false, motivo: 'Sin luz no hay computadora' };
   const p = player(s);
   if (p.ocupadoHoras > 0) return { ok: false, motivo: 'Estás ocupado/a con otra cosa' };
   return { ok: true };

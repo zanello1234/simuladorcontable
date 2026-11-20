@@ -20,11 +20,13 @@ import { Equipo } from './screens/Equipo';
 import { Escritorio } from './screens/Escritorio';
 import { Finanzas } from './screens/Finanzas';
 import { Herramientas } from './screens/Herramientas';
+import { Tablero } from './screens/Tablero';
 import { Tareas } from './screens/Tareas';
 import { TopBar } from './TopBar';
 
 const TABS: { id: Tab; icon: string; label: string }[] = [
   { id: 'escritorio', icon: '🏠', label: 'Escritorio' },
+  { id: 'tablero', icon: '📊', label: 'Tablero' },
   { id: 'tareas', icon: '📅', label: 'Tareas' },
   { id: 'clientes', icon: '🤝', label: 'Clientes' },
   { id: 'equipo', icon: '👥', label: 'Equipo' },
@@ -112,6 +114,7 @@ export function GameScreen() {
       </nav>
       <main className="panel" key={tab}>
         {tab === 'escritorio' && <Escritorio />}
+        {tab === 'tablero' && <Tablero />}
         {tab === 'tareas' && <Tareas />}
         {tab === 'clientes' && <Clientes />}
         {tab === 'equipo' && <Equipo />}

@@ -1,0 +1,264 @@
+/* Tablero del titular */
+.tb-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+.kpi {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-left-width: 5px;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+.kpi.ok {
+  border-left-color: var(--ok);
+}
+.kpi.warn {
+  border-left-color: var(--warn);
+}
+.kpi.bad {
+  border-left-color: var(--bad);
+}
+.kpi-icon {
+  font-size: 22px;
+  flex: none;
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.kpi-value {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.kpi-sub {
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.tb-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.tb-grid .span2 {
+  grid-column: span 2;
+}
+.tb-grid > * {
+  min-width: 0;
+}
+
+/* capacidad */
+.cap-bar {
+  position: relative;
+  display: flex;
+  height: 16px;
+  border-radius: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin: 8px 0 6px;
+}
+.cap-bar i {
+  display: block;
+  height: 100%;
+}
+.cap-line {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--ink);
+}
+.seg-impuestos {
+  background: #2a78d6;
+}
+.seg-sueldos {
+  background: #eb6834;
+}
+.seg-contabilidad {
+  background: #1baf7a;
+}
+:root[data-theme='dark'] .seg-impuestos {
+  background: #3987e5;
+}
+:root[data-theme='dark'] .seg-sueldos {
+  background: #d95926;
+}
+:root[data-theme='dark'] .seg-contabilidad {
+  background: #199e70;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .seg-impuestos {
+    background: #3987e5;
+  }
+  :root:not([data-theme='light']) .seg-sueldos {
+    background: #d95926;
+  }
+  :root:not([data-theme='light']) .seg-contabilidad {
+    background: #199e70;
+  }
+}
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+.cuellos {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cuellos li {
+  display: grid;
+  grid-template-columns: minmax(90px, 150px) 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+.cuellos li .bar {
+  min-width: 60px;
+}
+
+/* rentabilidad */
+.rent-table .sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+.rent-table .sortable.on {
+  color: var(--accent);
+}
+.tbl tr.clickable {
+  cursor: pointer;
+}
+.tbl tr.clickable:hover td {
+  background: var(--panel-2);
+}
+.rent-cards {
+  display: none;
+}
+.rent-card {
+  width: 100%;
+  text-align: left;
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+}
+.rent-nums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+/* riesgo */
+.riesgo-indice {
+  font-size: 40px;
+  font-weight: 900;
+  line-height: 1;
+  min-width: 86px;
+  font-variant-numeric: tabular-nums;
+}
+.riesgo-indice small {
+  font-size: 14px;
+  color: var(--muted);
+}
+.riesgo-indice .ok {
+  color: var(--ok);
+}
+.riesgo-indice .warn {
+  color: var(--warn);
+}
+.riesgo-indice .bad {
+  color: var(--bad);
+}
+.riesgo-list li {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.riesgo-list li:last-child {
+  border-bottom: none;
+}
+.bad-box {
+  background: var(--bad-soft);
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+/* equipo */
+.equipo-tbl td {
+  padding: 6px 8px;
+}
+
+/* objetivos */
+.objetivos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.objetivos li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel-2);
+}
+.objetivos li.done {
+  border-color: var(--ok);
+}
+.objetivos .chip {
+  margin-left: 6px;
+}
+.obj-form select {
+  flex: 1;
+  min-width: 160px;
+}
+
+@media (max-width: 860px) {
+  .tb-grid {
+    grid-template-columns: 1fr;
+  }
+  .tb-grid .span2 {
+    grid-column: auto;
+  }
+  .rent-table {
+    display: none;
+  }
+  .rent-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tb-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .kpi-value {
+    font-size: 18px;
+  }
+  .cuellos li {
+    grid-template-columns: minmax(70px, 110px) 1fr auto;
+  }
+}

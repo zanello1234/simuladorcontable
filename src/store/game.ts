@@ -8,7 +8,7 @@ import * as save from '../engine/save';
 import { tick as tickEngine } from '../engine/simulation';
 import type { GameState, NewGameConfig } from '../engine/types';
 
-export type Tab = 'escritorio' | 'tareas' | 'clientes' | 'equipo' | 'herramientas' | 'finanzas' | 'bandeja';
+export type Tab = 'escritorio' | 'tablero' | 'tareas' | 'clientes' | 'equipo' | 'herramientas' | 'finanzas' | 'bandeja';
 export type Tone = 'ok' | 'warn' | 'bad' | 'info';
 
 export interface Toast {

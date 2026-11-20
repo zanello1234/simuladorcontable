@@ -9,7 +9,7 @@ const KEY = 'partida-doble:save';
 /** Almacenamiento con fallback silencioso (modo privado, iframes, etc.). */
 function storage(): Storage | null {
   // la versión publicada en claude.ai guarda en la nube (cloud.ts), no en el navegador
-  if (import.meta.env.MODE === 'single') return null;
+  if (import.meta.env.MODE === 'single' || import.meta.env.MODE === 'real-single') return null;
   try {
     const s = window.localStorage;
     const k = '__pd_test__';

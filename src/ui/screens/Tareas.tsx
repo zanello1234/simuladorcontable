@@ -5,7 +5,7 @@ import { useGame } from '../../store/game';
 import { Empty, pendientes, primerNombre, Segmented } from '../components';
 import { TaskRow } from '../TaskRow';
 
-function Calendario({ g, mes, sel, onSel }: { g: GameState; mes: string; sel?: string; onSel: (d?: string) => void }) {
+export function Calendario({ g, mes, sel, onSel }: { g: GameState; mes: string; sel?: string; onSel: (d?: string) => void }) {
   const [y, m] = mes.split('-').map(Number);
   const n = lastDayOfMonth(y, m);
   const primero = ymd(y, m, 1);

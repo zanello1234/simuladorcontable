@@ -20,6 +20,7 @@ export const corto = (n: string) => n.split(' (')[0];
 
 /** Costos fijos mensuales del estudio (misma fórmula que la UI, sin depender de ella). */
 export function costoMensualEstudio(s: GameState): number {
+  if (s.estudio.real) return costoSueldos(s) + s.estudio.real.costosFijosMensuales;
   const i = s.inflacion.indice;
   const of = OFICINAS[s.estudio.oficina];
   return costoSueldos(s) + costoMensualHerramientas(s) + (of.alquiler + COSTOS_FIJOS.servicios * (1 + s.estudio.oficina * 0.6) + COSTOS_FIJOS.porPuesto * s.workers.length + COSTOS_FIJOS.cajaProfesional + MARKETING[s.estudio.marketing].costo) * i;
@@ -196,7 +197,7 @@ export function flujoFondos90(s: GameState): FlujoFondos {
     let f = inv.pagaEl;
     if (!f) {
       if (c && c.pagador < 0.3) continue; // probable incobrable
-      f = addBusinessDays(inv.emitida, diasPago(c?.pagador ?? 0.5));
+      f = addBusinessDays(inv.emitida, s.estudio.real ? s.estudio.real.diasCobro : diasPago(c?.pagador ?? 0.5));
     }
     if (f < s.date) f = addBusinessDays(s.date, 2);
     if (f <= fin) movs.push({ fecha: f, concepto: `Cobro ${inv.numero} · ${corto(c?.nombre ?? '')}`, monto: inv.monto });
@@ -210,20 +211,23 @@ export function flujoFondos90(s: GameState): FlujoFondos {
     if (!(k === 0 && yaFact) && emision >= s.date) {
       for (const c of actuales) {
         if (c.pagador < 0.3) continue;
-        const f = addBusinessDays(emision, diasPago(c.pagador));
+        const f = addBusinessDays(emision, s.estudio.real ? s.estudio.real.diasCobro : diasPago(c.pagador));
         if (f <= fin) movs.push({ fecha: f, concepto: `Abono ${mes.slice(5)}/${mes.slice(0, 4)} · ${corto(c.nombre)}`, monto: c.honorario });
       }
     }
     mes = nextMonthKey(mes);
   }
   // egresos con fecha
-  const equipo = s.workers.filter((w) => w.id !== 'player');
+  if (s.estudio.real) {
+    for (const e of s.estudio.real.egresosProyectados) if (e.fecha >= s.date && e.fecha <= fin && e.monto > 0) movs.push({ fecha: e.fecha, concepto: e.concepto, monto: -Math.round(e.monto) });
+  }
+  const equipo = s.estudio.real ? [] : s.workers.filter((w) => w.id !== 'player');
   const bruto = equipo.reduce((a, w) => a + w.sueldo, 0);
   const of = OFICINAS[s.estudio.oficina];
   const software = s.tools.reduce((a, id) => a + Math.round(((TOOL_COSTO.get(id) ?? 0) * i) / 1000) * 1000, 0);
   let prestamos = s.estudio.prestamo?.restantes ?? 0;
   let m = monthKey(s.date);
-  for (let k = 0; k < 4; k++) {
+  for (let k = 0; k < (s.estudio.real ? 0 : 4); k++) {
     const [y, mm] = m.split('-').map(Number);
     const enDia = (d: number) => adjustToBusinessDay(ymd(y, mm, Math.min(d, lastDayOfMonth(y, mm))));
     const push = (fecha: string, concepto: string, monto: number) => {

@@ -11,7 +11,9 @@
     "preview": "vite preview --host",
     "typecheck": "tsc -b --noEmit",
     "test": "vitest run",
-    "build:artifact": "npm run build:single && node scripts/artifact.mjs"
+    "build:artifact": "npm run build:single && node scripts/artifact.mjs",
+    "build:real": "vite build --mode real-single && node scripts/artifact.mjs dist-real/tablero.html dist-real/tablero-be-onlyone.html 'Tablero Be OnlyOne'",
+    "dev:real": "vite --host --open /tablero.html"
   },
   "dependencies": {
     "immer": "^10.1.1",

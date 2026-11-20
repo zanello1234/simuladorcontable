@@ -437,6 +437,8 @@ export interface Estudio {
   prestamo?: { cuota: number; restantes: number };
   /** veces que el titular aceptó "dibujar" números */
   faltasEticas: number;
+  /** modo "estudio real" (Tablero Be OnlyOne): reemplaza los costos de juego por los cargados */
+  real?: { costosFijosMensuales: number; egresosProyectados: { fecha: ISODate; concepto: string; monto: number }[]; diasCobro: number };
 }
 
 export interface Inflacion {

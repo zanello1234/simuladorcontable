@@ -505,7 +505,7 @@ function tocarSfx(ctx: Ctx, out: AudioNode, noise: AudioBuffer, name: Sfx): void
 
 function storage(): Storage | null {
   // en la versión publicada en claude.ai no se usa almacenamiento del navegador
-  if (import.meta.env.MODE === 'single') return null;
+  if (import.meta.env.MODE === 'single' || import.meta.env.MODE === 'real-single') return null;
   try {
     return window.localStorage;
   } catch {

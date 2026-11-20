@@ -4,7 +4,7 @@ import { money } from '../../engine/format';
 import type { Client } from '../../engine/types';
 import { D, H, comparar, round, type Asiento } from '../asientos/asiento';
 import type { Chip } from '../asientos/casoAsientos';
-import { PLAN, RUBRO_SECCION, cuenta, type RubroEECC } from '../asientos/planCuentas';
+import { RUBRO_LABEL, RUBRO_SECCION, cuenta, type RubroEECC } from '../asientos/planCuentas';
 import type { MinigameResult } from '../types';
 
 /** Parámetros de juego [A CONFIRMAR]: alícuota de Ganancias sociedades simplificada (art. 73, tramo máximo). */
@@ -317,7 +317,8 @@ export function opcionesResultado(correcto: number, saldos: SaldoCuenta[]): { mo
   if (!set.has(sinImp)) set.set(sinImp, 'Resultado antes del impuesto a las ganancias');
   const sinRecpam = round(correcto + recpam);
   if (!set.has(sinRecpam)) set.set(sinRecpam, 'Sin computar el RECPAM');
-  if (set.size < 3) set.set(round(correcto * 1.1), 'Sin la provisión de gastos');
+  const extras = [round(correcto * 1.1), round(correcto * 0.9), round(correcto + 250_000), round(correcto - 250_000)];
+  for (const e of extras) if (set.size < 3 && !set.has(e)) set.set(e, 'Distractor');
   return [...set.entries()].slice(0, 3).map(([monto]) => ({ monto, correcta: monto === correcto, label: '' }));
 }
 export function opcionesReserva(resultado: number, saldos: SaldoCuenta[]): { monto: number; correcta: boolean; detalle: string }[] {
@@ -326,8 +327,9 @@ export function opcionesReserva(resultado: number, saldos: SaldoCuenta[]): { mon
   const out = new Map<number, string>();
   out.set(ok, 'Reserva legal del ejercicio');
   if (!out.has(cinco)) out.set(cinco, '5% del resultado sin considerar el tope del 20% del capital');
-  if (out.size < 3) out.set(round(Math.max(0, resultado) * 0.2), '20% del resultado');
-  if (out.size < 3) out.set(0, 'No constituir reserva');
+  const cap = capitalTotal(saldos);
+  const extras: [number, string][] = [[round(Math.max(0, resultado) * 0.2), '20% del resultado'], [0, 'No constituir reserva'], [round(cap * 0.05), '5% del capital'], [round(cap * 0.2), '20% del capital'], [round(Math.abs(resultado) * 0.05), '5% del quebranto']];
+  for (const [m, d] of extras) if (out.size < 3 && !out.has(m)) out.set(m, d);
   return [...out.entries()].slice(0, 3).map(([monto, detalle]) => ({ monto, correcta: monto === ok, detalle }));
 }
 
@@ -346,7 +348,9 @@ export function evaluarCierre(caso: CasoCierre, resp: RespuestasCierre): Minigam
   let pa = 0;
   for (const a of caso.ajustes) {
     const cmp = comparar(resp.ajustes[a.id] ?? { lineas: [] }, a.solucion);
-    const sc = cmp.cuentas * 0.6 + cmp.importes * 0.4;
+    // un asiento de cierre incompleto o con una cuenta equivocada vale como mucho medio punto
+    const bruto = cmp.cuentas * 0.6 + cmp.importes * 0.4;
+    const sc = bruto >= 0.999 ? 1 : Math.min(0.5, bruto);
     pa += sc;
     if (sc < 0.999) errores.push(`${a.titulo}: ${cmp.faltan.length ? `faltó ${cmp.faltan.map((l) => `${l.debe ? 'debitar' : 'acreditar'} ${l.cuenta}`).join(', ')}` : cmp.importesMal.length ? `importe incorrecto en ${cmp.importesMal.map((l) => l.cuenta).join(', ')}` : 'asiento incorrecto'}. ${a.explicacion}`);
   }
@@ -362,7 +366,7 @@ export function evaluarCierre(caso: CasoCierre, resp: RespuestasCierre): Minigam
     const plazoEsp = caso.plazos[s.cuenta] ?? 'na';
     const plazoOk = plazoEsp === 'na' ? true : r.plazo === plazoEsp;
     pc += (rubroOk ? 0.7 : 0) + (plazoOk ? 0.3 : 0);
-    if (!rubroOk || !plazoOk) malClasif.push(`${c.nombre}${!rubroOk ? ` (va en ${RUBRO_LABEL_SAFE(c.rubro)})` : ''}${!plazoOk ? ` (${plazoEsp === 'no_corriente' ? 'no corriente' : 'corriente'}: ${caso.fichaPlazo[s.cuenta] ?? ''})` : ''}`);
+    if (!rubroOk || !plazoOk) malClasif.push(`${c.nombre}${!rubroOk ? ` (va en ${RUBRO_LABEL[c.rubro]})` : ''}${!plazoOk ? ` (${plazoEsp === 'no_corriente' ? 'no corriente' : 'corriente'}: ${caso.fichaPlazo[s.cuenta] ?? ''})` : ''}`);
   }
   const clasifScore = saldos.length ? pc / saldos.length : 1;
   if (malClasif.length) errores.push(`Clasificación en rubros: ${malClasif.slice(0, 6).join('; ')}${malClasif.length > 6 ? ` y ${malClasif.length - 6} más` : ''}.`);
@@ -377,12 +381,6 @@ export function evaluarCierre(caso: CasoCierre, resp: RespuestasCierre): Minigam
   const score = Math.round((ajustesScore * 0.5 + clasifScore * 0.3 + estadosScore * 0.2) * 1000) / 1000;
   const resumen = score >= 0.999 ? `Ejercicio cerrado sin observaciones: resultado ${money(res)}, EECC listos para firmar.` : `Cierre con observaciones: ajustes ${Math.round(ajustesScore * 100)}%, exposición ${Math.round(clasifScore * 100)}%, estados ${Math.round(estadosScore * 100)}%.`;
   return { score, resumen, errores: errores.slice(0, 8).concat(errores.length > 8 ? [`…y ${errores.length - 8} observaciones más`] : []) };
-}
-
-function RUBRO_LABEL_SAFE(r: RubroEECC): string {
-  const found = PLAN.find((c) => c.rubro === r);
-  void found;
-  return r.replace(/_/g, ' ');
 }
 
 // ----------------------------------------------------------------------------- estados contables

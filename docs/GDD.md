@@ -130,7 +130,12 @@ Fiscalización de ARCA (con requerimiento a contestar y posible ajuste), ARCA ca
 4. **Conciliación bancaria**: emparejar extracto y mayor, clasificar partidas, saldo conciliado y asientos de ajuste.
 5. **DDJJ de Ganancias Personas Humanas**: rentas por categoría (con exentas y cedulares), deducciones generales con topes, cargas de familia, escala del art. 94, pagos a cuenta y anticipos. Vista previa del formulario.
 6. **Control de comprobantes (facturas apócrifas)**: CUIT con dígito verificador, base APOC, validación de CAE, CAE vencido, actividad incompatible, capacidad operativa, pagos en efectivo (Ley antievasión), duplicados y emisores dados de baja; con presupuesto de consultas, como en la vida real.
-7. **Relámpago**: ver 3.8 bis.
+7. **Asientos del mes**: Libro Diario con plan de cuentas PyME argentino (códigos estilo Odoo), constructor Debe/Haber, trampas (anticipos, gastos del socio, devengado) y sumas y saldos.
+8. **Cierre de ejercicio**: ajustes (depreciaciones, previsiones, devengamientos, RT 6 con RECPAM, provisión de Ganancias), clasificación en rubros RT 9/RT 54, ESP y ER, reserva legal y firma.
+9. **Relámpago**: ver 3.8 bis.
+
+### 3.11 Tablero del titular
+Pestaña 📊 con cumplimiento, capacidad vs. carga de la semana, flujo de fondos a 90 días con alerta de bache, rentabilidad por cliente ($/h, margen, atraso, deuda, etiquetas), riesgo profesional, equipo, objetivos propios e informe mensual CSV. Reunión de los lunes con resumen hablado.
 
 ### 3.10 Discusiones con el cliente
 Escenas de diálogo (estilo novela visual liviana) con ramas y consecuencias en satisfacción, reputación, caja, honorarios, riesgo fiscal y ética: "¿por qué pago tanto de IVA?", negociación de honorarios, discusión por una multa, "blanqueame al pibe la mitad", documentación que no llega, intimaciones, honorarios en negro, cliente que se quiere ir, consultas técnicas, facturas del proveedor nuevo, reclamo por un error del estudio y certificaciones "infladas".

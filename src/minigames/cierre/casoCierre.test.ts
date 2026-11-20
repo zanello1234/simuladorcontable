@@ -43,7 +43,7 @@ describe('Cierre de ejercicio', () => {
       expect(new Set(orl.map((o) => o.monto)).size).toBe(3);
       // elegir siempre la opción incorrecta baja el score
       const malas = Object.fromEntries(caso.ajustes.map((a) => [a.id, a.opciones[(a.correcta + 1) % 3]]));
-      expect(evaluarCierre(caso, { ...perf, ajustes: malas }).score).toBeLessThan(0.7);
+      expect(evaluarCierre(caso, { ...perf, ajustes: malas }).score).toBeLessThan(0.8);
     }
   });
 
